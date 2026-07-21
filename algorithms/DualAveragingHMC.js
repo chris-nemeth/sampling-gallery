@@ -32,7 +32,8 @@ MCMC.registerAlgorithm("DualAveragingHMC", {
       const a = 2 * (self.joint(result.theta, result.r) / self.joint(theta, r) > 0.5 ? 1 : 0) - 1;
       while (Math.pow(self.joint(result.theta, result.r) / self.joint(theta, r), a) > Math.pow(2.0, -a)) {
         epsilon = Math.pow(2, a) * epsilon;
-        result = self.leapFrog(result.theta, result.r, epsilon);
+        // Algorithm 4: always take a single leapfrog step from the original (theta, r)
+        result = self.leapFrog(theta, r, epsilon);
       }
       return Math.max(1e-3, epsilon);
     };
@@ -43,7 +44,7 @@ MCMC.registerAlgorithm("DualAveragingHMC", {
     self.epsilon = [self.findReasonableEpsilon(self.chain.last())];
     self.mu = Math.log(10 * self.epsilon[0]);
     self.epsilon_bar = [1.0];
-    self.H_bar = [1.0];
+    self.H_bar = [0.0];
 
     self.gamma = 0.2;
     self.t0 = 10;

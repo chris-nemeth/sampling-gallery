@@ -35,7 +35,8 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
       var a = 2 * (self.joint(result.theta, result.r) / self.joint(theta, r) > 0.5 ? 1 : 0) - 1;
       while (Math.pow(self.joint(result.theta, result.r) / self.joint(theta, r), a) > Math.pow(2.0, -a)) {
         epsilon = Math.pow(2, a) * epsilon;
-        result = self.leapFrog(result.theta, result.r, epsilon);
+        // Algorithm 4: always take a single leapfrog step from the original (theta, r)
+        result = self.leapFrog(theta, r, epsilon);
       }
       return Math.max(0.1, epsilon);
     };
@@ -46,7 +47,7 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
     self.epsilon = [self.findReasonableEpsilon(self.chain.last())];
     self.mu = Math.log(10 * self.epsilon[0]);
     self.epsilon_bar = [1.0];
-    self.H_bar = [1.0];
+    self.H_bar = [0.0];
 
     self.gamma = 0.2;
     self.t0 = 10;
@@ -69,9 +70,13 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
     var trajectory = [];
 
     // BuildTree from Algorithm 3: Efficient No-U-Turn Sampler
-    function buildTree(q, p, u, v, j, dt, q0, p0) {
+    // theta0/p0 are the global initial state of the whole step (needed for the
+    // dual-averaging acceptance statistic); qFrom is this node's pre-step
+    // position (used only to draw the leapfrog segment).
+    function buildTree(q, p, u, v, j, dt, theta0, p0) {
       var q = q.copy(),
-        q0 = q.copy();
+        p = p.copy(),
+        qFrom = q.copy();
       if (j == 0) {
         // base case - take one leapfrog step in the direction v
         p.increment(self.gradLogDensity(q).scale((v * dt) / 2));
@@ -81,10 +86,10 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
         var s_ = u < Math.exp(self.Delta_max + self.logDensity(q) - p.norm2() / 2) ? 1 : 0;
         trajectory.push({
           type: n_ == 1 ? "accept" : "reject",
-          from: q0.copy(),
+          from: qFrom.copy(),
           to: q.copy(),
         });
-        var alpha = Math.min(1, Math.exp(self.logDensity(q) - p.norm2() / 2 - self.logDensity(q0) + p0.norm2() / 2));
+        var alpha = Math.min(1, Math.exp(self.logDensity(q) - p.norm2() / 2 - self.logDensity(theta0) + p0.norm2() / 2));
         var n_alpha = 1;
         return {
           q_p: q,
@@ -99,7 +104,7 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
         };
       } else {
         // recursion - build the left and right subtrees
-        var result = buildTree(q, p, u, v, j - 1, dt, q0, p0);
+        var result = buildTree(q, p, u, v, j - 1, dt, theta0, p0);
         var q_m = result.q_m,
           p_m = result.p_m,
           q_p = result.q_p,
@@ -112,7 +117,7 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
         if (s_ == 1) {
           var n__, s__, q__, alpha__, n_alpha__;
           if (v == -1) {
-            var result = buildTree(q_m, p_m, u, v, j - 1, dt, q0, p0);
+            var result = buildTree(q_m, p_m, u, v, j - 1, dt, theta0, p0);
             q_m = result.q_m;
             p_m = result.p_m;
             q__ = result.q_;
@@ -121,7 +126,7 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
             alpha__ = result.alpha_;
             n_alpha__ = result.n_alpha_;
           } else {
-            var result = buildTree(q_p, p_p, u, v, j - 1, dt, q0, p0);
+            var result = buildTree(q_p, p_p, u, v, j - 1, dt, theta0, p0);
             q_p = result.q_p;
             p_p = result.p_p;
             q__ = result.q_;

@@ -35,11 +35,11 @@ MCMC.registerAlgorithm("MicrocanonicalHamiltonianMC", {
     }
     
     const q0 = self.chain.last();
-    const p0 = MultivariateNormal.getSample(self.dim);
-      
-    // Normalize p0
+    let p0 = MultivariateNormal.getSample(self.dim);
+
+    // Normalize p0 onto the unit sphere (.scale() returns a new array)
     const p0Norm = Math.sqrt(p0.norm2());
-    p0.scale(1.0 / p0Norm);
+    p0 = p0.scale(1.0 / p0Norm);
 
     // use leapfrog integration to find proposal
     const q = q0.copy();

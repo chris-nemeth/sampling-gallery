@@ -21,10 +21,6 @@ function point(L, coords, phys_coords) {
 function random_uniform() {
 	return Math.random();
 }
-function random_normal(mu, stdev) {
-    var proposalDist  = new MultivariateNormal(mu, stdev*stdev);
-    return proposalDist.getSample();
-}
 function random_int(imin, imax) {
     return Math.floor(Math.random() * (imax - imin + 1)) + imin;
 }
@@ -56,27 +52,6 @@ function compute_distance_lt(acoords, bcoords, maxsqdistance) {
 }
 
 
-
-function nearest_rdistance_guess(ndim, live_points) {
-	// Jack-knife implementation
-	var maxsqdistance = 0.0
-	var n = live_points.length
-	for(var i = 0; i < n; i++) {
-		// leave ith point out
-		var mindistance = 1e300
-		var nonmember = live_points[i]
-		for (var k = 0; k < n; k++) {
-			if (k == i)
-				continue;
-			var dist = compute_distance(live_points[k].coords, nonmember.coords)
-			if (k == 0 || dist < mindistance)
-				mindistance = dist
-		}
-		maxsqdistance = Math.max(mindistance, maxsqdistance)
-	}
-	// console.log("nearest_rdistance_guess: " + maxsqdistance + " from " + n)
-	return maxsqdistance
-}
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);

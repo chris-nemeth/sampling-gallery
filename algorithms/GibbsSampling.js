@@ -36,7 +36,8 @@ MCMC.registerAlgorithm("GibbsSampling", {
       while (sum < threshold) {
         sum += densities[i++];
       }
-      point[index] = Xs[i - 1];
+      // guard against threshold ~ 0 (loop never runs, i stays 0 -> Xs[-1])
+      point[index] = Xs[Math.max(0, i - 1)];
       return point;
     }
 
