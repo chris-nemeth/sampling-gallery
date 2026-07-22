@@ -58,7 +58,7 @@ MCMC.registerAlgorithm("DualAveragingNUTS", {
     folder
       .add(self, "delta", 0.2, 1)
       .step(0.05)
-      .name("&delta;")
+      .name("δ")
       .onChange(function (value) {
         sim.reset();
       });

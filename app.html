@@ -1,13 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1"
     />
     <title>MCMC Interactive Gallery</title>
-    <script src="lib/dat.gui.min.js"></script>
+    <script src="lib/lil-gui.umd.min.js"></script>
+    <script src="lib/gif.js"></script>
     <script src="lib/conrec.min.js"></script>
     <script src="lib/canvas-5-polyfill.js"></script>
     <script src="lib/linalg.core.js"></script>
@@ -112,6 +113,7 @@
     <div id="stats"></div>
     <canvas id="plotCanvas" width="100%" height="100%"></canvas>
     <script src="main/MultivariateNormal.js"></script>
+    <script src="main/Colormaps.js"></script>
     <script src="main/MCMC.js"></script>
     <script src="main/Simulation.js"></script>
     <script src="main/Visualizer.js"></script>

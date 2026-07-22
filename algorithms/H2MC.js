@@ -79,7 +79,7 @@ MCMC.registerAlgorithm("H2MC", {
   },
 
   attachUI: function (self, folder) {
-    folder.add(self, "sigma", 0.1, 5).step(0.1).name("&sigma;");
+    folder.add(self, "sigma", 0.1, 5).step(0.1).name("σ");
     folder.add(self, "L", 0.1, 6.28).step(0.1).name("L");
     folder.open();
   },

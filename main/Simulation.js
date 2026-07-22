@@ -134,6 +134,26 @@ class Simulation {
     }
     this.mcmc.marginals[1] = this.mcmc.marginals[1].scale(1.0 / this.mcmc.marginals[1].maxCoeff());
 
+    // stash the grid so the heatmap can be recoloured (colormap change)
+    // without recomputing the (expensive) density evaluation
+    this.mcmc.densityData = data;
+    this.mcmc.densityMin = min;
+    this.mcmc.densityMax = max;
+    this.mcmc.densityNx = nx;
+    this.mcmc.densityNy = ny;
+    this.buildDensityImage();
+  }
+  // rasterise the density grid into mcmc.densityCanvas using the visualizer's
+  // current colormap; alpha ramps with density so low-probability regions fade
+  // to the page background
+  buildDensityImage() {
+    const data = this.mcmc.densityData;
+    if (!data) return;
+    const nx = this.mcmc.densityNx,
+      ny = this.mcmc.densityNy,
+      min = this.mcmc.densityMin,
+      max = this.mcmc.densityMax;
+    const name = this.visualizer ? this.visualizer.colormap : "viridis";
     var buffer = document.createElement("canvas");
     buffer.width = nx;
     buffer.height = ny;
@@ -142,11 +162,12 @@ class Simulation {
     for (let j = 0; j < ny; ++j) {
       for (let i = 0; i < nx; ++i) {
         var base = 4 * ((ny - 1 - j) * nx + i);
-        var value = Math.sqrt((data[i][j] - min) / (max - min)) * 255;
-        image.data[base] = 102;
-        image.data[base + 1] = 153;
-        image.data[base + 2] = 187;
-        image.data[base + 3] = value | 0;
+        var t = (data[i][j] - min) / (max - min);
+        var rgb = Colormaps.get(name, t);
+        image.data[base] = rgb[0] | 0;
+        image.data[base + 1] = rgb[1] | 0;
+        image.data[base + 2] = rgb[2] | 0;
+        image.data[base + 3] = (Math.sqrt(t) * 255) | 0;
       }
     }
     context.putImageData(image, 0, 0);
@@ -350,22 +371,30 @@ window.onload = function () {
   sim.setTarget(target);
 
   sim.mcmc.init(sim.mcmc);
+  viz.setTheme(viz.theme);
   window.onresize = function () {
     viz.resize();
   };
 
-  gui = new dat.GUI({ width: 300 });
+  gui = new lil.GUI({ width: 300 });
+
+  // the algorithm-options folder is rebuilt whenever the algorithm changes;
+  // keep a reference so it can be destroyed cleanly (lil-gui folder.destroy())
+  var algoFolder = null;
+  function rebuildAlgoOptions() {
+    if (algoFolder) algoFolder.destroy();
+    algoFolder = gui.addFolder("Algorithm Options");
+    sim.mcmc.attachUI(sim.mcmc, algoFolder);
+    algoFolder.add(sim.mcmc, "about").name("About this algorithm");
+    algoFolder.open();
+  }
 
   var f1 = gui.addFolder("Simulation options");
   f1.add(sim, "algorithm", MCMC.algorithmNames)
     .name("Algorithm")
     .onChange(function (value) {
       sim.setAlgorithm(value);
-      gui.removeFolder("Algorithm Options");
-      var f = gui.addFolder("Algorithm Options");
-      sim.mcmc.attachUI(sim.mcmc, f);
-      // f.add(sim.mcmc, 'about').name('About...');
-      f.open();
+      rebuildAlgoOptions();
     });
   f1.add(sim, "target", MCMC.targetNames)
     .name("Target distribution")
@@ -388,6 +417,12 @@ window.onload = function () {
   f1.open();
 
   var f2 = gui.addFolder("Visualization Options");
+  f2.add(viz, "colormap", Colormaps.names)
+    .name("Colormap")
+    .onChange(function (value) {
+      sim.buildDensityImage();
+      viz.redrawDensity();
+    });
   f2.add(viz, "animateProposal").name("Animate proposal").listen();
   f2.add(viz, "showTargetDensity").name("Show target");
   f2.add(viz, "showSamples").name("Show samples");
@@ -404,24 +439,17 @@ window.onload = function () {
       viz.drawHistograms();
       viz.render();
     });
+  f2.add(viz, "theme", ["light", "dark"])
+    .name("Theme")
+    .onChange(function (value) {
+      viz.setTheme(value);
+    });
+  f2.add(viz, "trails").name("Sample trails");
+  f2.add({ savePNG: function () { viz.savePNG(); } }, "savePNG").name("Save PNG");
+  f2.add({ recordGIF: function () { viz.recordGIF(3); } }, "recordGIF").name("Record GIF (3s)");
   f2.open();
 
-  gui.removeFolder("Algorithm Options");
-  var f3 = gui.addFolder("Algorithm Options");
-  sim.mcmc.attachUI(sim.mcmc, f3);
-  f3.add(sim.mcmc, "about").name("About this algorithm");
-  f3.open();
+  rebuildAlgoOptions();
 
   sim.animate();
-};
-
-dat.GUI.prototype.removeFolder = function (name) {
-  var folder = this.__folders[name];
-  if (!folder) {
-    return;
-  }
-  folder.close();
-  this.__ul.removeChild(folder.domElement.parentNode);
-  delete this.__folders[name];
-  this.onResize();
 };
