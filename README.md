@@ -12,9 +12,14 @@ Click on an algorithm below to view an interactive demo where you can change alg
 *   [Hamiltonian Monte Carlo](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=HamiltonianMC&target=banana) [[2]](#ref-2)
 *   [No-U-Turn Sampler](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=NaiveNUTS&target=banana) [[2]](#ref-2)
 *   [Metropolis-adjusted Langevin Algorithm (MALA)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=MALA&target=banana) [[3]](#ref-3)
+*   [Unadjusted Langevin Algorithm (ULA)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=ULA&target=banana) [[3]](#ref-3)
+*   [Stochastic Gradient Langevin Dynamics (SGLD)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=SGLD&target=banana) [[9]](#ref-9)
+*   [SGLD with Control Variates (SGLD-CV)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=SGLD-CV&target=banana) [[10]](#ref-10)
+*   [Tuning-free ULA (FUSE)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=FUSE-ULA&target=banana) [[11]](#ref-11)
 *   [Hessian-Hamiltonian Monte Carlo (H2MC)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=H2MC&target=banana) [[4]](#ref-4)
 *   [Gibbs Sampling](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=GibbsSampling&target=banana)
 *   [DE-MCMC-Z](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=DE-MCMC-Z&target=banana) [[7]](#ref-7)
+*   [Microcanonical Hamiltonian Monte Carlo (MCHMC)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=MicrocanonicalHamiltonianMC&target=banana) [[8]](#ref-8)
 
 ### Non-Markovian iterative sampling methods
 *   [Stein Variational Gradient Descent (SVGD)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=SVGD&target=banana&delay=0) [[5]](#ref-5)
@@ -35,6 +40,14 @@ Click on an algorithm below to view an interactive demo where you can change alg
 [6] J. Buchner [A statistical test for Nested Sampling algorithms](https://arxiv.org/abs/1407.5459) Statistics and Computing. 2014.
 
 [7] Cajo J. F. ter Braak & Jasper A. Vrugt [Differential Evolution Markov Chain with snooker updater and fewer chains](https://link.springer.com/article/10.1007/s11222-008-9104-9) Statistics and Computing. 2008.
+
+[8] J. Robnik, G. B. De Luca, E. Silverstein, U. Seljak [Microcanonical Hamiltonian Monte Carlo](https://arxiv.org/abs/2212.08549) (2022)
+
+[9] M. Welling, Y. W. Teh [Bayesian Learning via Stochastic Gradient Langevin Dynamics](https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf) ICML. 2011.
+
+[10] J. Baker, P. Fearnhead, E. B. Fox, C. Nemeth [Control variates for stochastic gradient MCMC](https://arxiv.org/abs/1706.05439) Statistics and Computing. 2019.
+
+[11] L. Sharrock, C. Nemeth [Tuning-Free Sampling via Optimization on the Space of Probability Measures](https://arxiv.org/abs/2510.25315) (2025)
 
 ### Running locally
 Clone or download the repository and open `index.html` in your web browser. All dependencies are included in in `lib/`.

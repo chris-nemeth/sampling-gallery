@@ -11,6 +11,10 @@ class Simulation {
     this.delay = 250;
     this.tweeningDelay = 0;
     this.autoplay = true;
+    this.stepCount = 0;
+    this.acceptCount = 0;
+    this.rejectCount = 0;
+    this.lastStatsUpdate = 0;
   }
   setAlgorithm(algorithmName) {
     console.log("Setting algorithm to " + algorithmName);
@@ -30,6 +34,7 @@ class Simulation {
       this.mcmc.initialized = true;
       this.visualizer.resize();
     }
+    this.resetStats();
   }
   setTarget(targetName) {
     console.log("Setting target to " + targetName, MCMC.targets[targetName]);
@@ -80,6 +85,7 @@ class Simulation {
       this.mcmc.initialized = true;
       this.visualizer.resize();
     }
+    this.resetStats();
   }
   computeContours(logDensity, xmin, xmax, ymin, ymax, nx, ny, nz) {
     // get contours
@@ -149,15 +155,109 @@ class Simulation {
   reset() {
     this.mcmc.reset(this.mcmc);
     this.visualizer.resize();
+    this.resetStats();
   }
   step() {
-    if (this.visualizer.queue.length == 0) this.mcmc.step(this.mcmc, this.visualizer);
+    if (this.visualizer.queue.length == 0) {
+      this.mcmc.step(this.mcmc, this.visualizer);
+      this.stepCount++;
+      for (let i = 0; i < this.visualizer.queue.length; i++) {
+        const type = this.visualizer.queue[i].type;
+        if (type == "accept") this.acceptCount++;
+        else if (type == "reject") this.rejectCount++;
+      }
+    }
     if (this.visualizer.animateProposal == false) {
       while (this.visualizer.queue.length > 0) this.visualizer.dequeue();
     } else {
       this.visualizer.dequeue();
     }
     this.visualizer.render();
+    this.updateStats();
+  }
+  resetStats() {
+    this.stepCount = 0;
+    this.acceptCount = 0;
+    this.rejectCount = 0;
+    this.lastStatsUpdate = 0;
+    this.updateStats(true);
+  }
+  updateStats(force) {
+    const el = document.getElementById("stats");
+    if (!el) return;
+    const chain = this.mcmc.chain;
+    if (!this.visualizer || !this.visualizer.showDiagnostics || !chain || chain.length == 0) {
+      el.style.display = "none";
+      return;
+    }
+    // throttle: recomputing over the full chain every frame is wasteful at delay=0
+    const now = performance.now();
+    if (!force && now - this.lastStatsUpdate < 200) return;
+    this.lastStatsUpdate = now;
+    el.style.display = "inline-block";
+
+    const hasWeights = this.mcmc.hasOwnProperty("chain_weights");
+    let m0 = 0,
+      m1 = 0,
+      wsum = 0,
+      w2sum = 0;
+    for (let i = 0; i < chain.length; i++) {
+      const w = hasWeights ? this.mcmc.chain_weights[i] : 1;
+      m0 += w * chain[i][0];
+      m1 += w * chain[i][1];
+      wsum += w;
+      w2sum += w * w;
+    }
+    m0 /= wsum;
+    m1 /= wsum;
+
+    const proposals = this.acceptCount + this.rejectCount;
+    const lines = [];
+    lines.push("steps  " + this.stepCount);
+    lines.push("accept " + (proposals > 0 ? ((100 * this.acceptCount) / proposals).toFixed(0) + "%" : "n/a"));
+    lines.push("mean   (" + m0.toFixed(2) + ", " + m1.toFixed(2) + ")");
+    if (hasWeights) {
+      // Kish effective sample size for weighted samples (nested sampling)
+      lines.push("ESS    " + ((wsum * wsum) / w2sum).toFixed(0) + " (weighted)");
+    } else if (proposals > 0 && chain.length > 10) {
+      const tau = this.integratedAutocorrTime(chain);
+      lines.push("ESS    " + (chain.length / tau).toFixed(0) + " (\u03C4 = " + tau.toFixed(1) + ")");
+    } else {
+      // chain is not a Markov chain (e.g. SVGD particles) or too short
+      lines.push("ESS    n/a");
+    }
+    el.textContent = lines.join("\n");
+  }
+  // integrated autocorrelation time over a recent window, summing lags until
+  // the autocorrelation drops below 0.05 (initial-positive-sequence truncation)
+  integratedAutocorrTime(chain) {
+    const W = Math.min(chain.length, 1000);
+    const start = chain.length - W;
+    let m0 = 0,
+      m1 = 0;
+    for (let i = start; i < chain.length; i++) {
+      m0 += chain[i][0];
+      m1 += chain[i][1];
+    }
+    m0 /= W;
+    m1 /= W;
+    let c0 = 0;
+    for (let i = start; i < chain.length; i++)
+      c0 += Math.pow(chain[i][0] - m0, 2) + Math.pow(chain[i][1] - m1, 2);
+    c0 /= W;
+    if (c0 <= 0) return 1;
+    let tau = 1;
+    const maxLag = Math.min(100, W - 2);
+    for (let k = 1; k <= maxLag; k++) {
+      let ck = 0;
+      for (let i = start + k; i < chain.length; i++)
+        ck += (chain[i][0] - m0) * (chain[i - k][0] - m0) + (chain[i][1] - m1) * (chain[i - k][1] - m1);
+      ck /= W - k;
+      const rho = ck / c0;
+      if (rho < 0.05) break;
+      tau += 2 * rho;
+    }
+    return tau;
   }
   animate() {
     var self = this;
@@ -230,6 +330,7 @@ window.onload = function () {
       ["animateProposal", parseBool, viz, "viz"],
       ["showSamples", parseBool, viz, "viz"],
       ["showHistograms", parseBool, viz, "viz"],
+      ["showDiagnostics", parseBool, viz, "viz"],
       ["histBins", parseInt, viz, "viz"],
     ];
     for (let i = 0; i < config.length; i++) {
@@ -291,6 +392,11 @@ window.onload = function () {
   f2.add(viz, "showTargetDensity").name("Show target");
   f2.add(viz, "showSamples").name("Show samples");
   f2.add(viz, "showHistograms").name("Show histogram");
+  f2.add(viz, "showDiagnostics")
+    .name("Show diagnostics")
+    .onChange(function (value) {
+      sim.updateStats(true);
+    });
   f2.add(viz, "histBins", 20, 200)
     .step(1)
     .name("Histogram bins")

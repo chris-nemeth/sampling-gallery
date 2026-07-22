@@ -27,7 +27,11 @@ MCMC.registerAlgorithm("EfficientNUTS", {
 
     // BuildTree from Algorithm 3: Efficient No-U-Turn Sampler
     function buildTree(q, p, u, v, j) {
+      // copy p as well as q, so the returned q_minus/p_minus endpoint is a
+      // snapshot and does not alias the q_plus/p_plus end (needed for the
+      // recursive no-U-turn check)
       var q = q.copy(),
+        p = p.copy(),
         q0 = q.copy();
       if (j == 0) {
         // base case - take one leapfrog step in the direction v

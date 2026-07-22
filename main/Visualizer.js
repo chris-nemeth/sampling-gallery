@@ -18,12 +18,14 @@ class Visualizer {
     this.animateProposal = true;
     this.tweening = false;
     this.showHistograms = true;
+    this.showDiagnostics = true;
 
     this.arrowSize = 10;
     this.proposalColor = "#999";
     this.trajectoryColor = "#333";
-    this.acceptColor = "#4c4";
-    this.rejectColor = "#f00";
+    // Okabe-Ito blue / vermillion (colorblind-safe)
+    this.acceptColor = "#0072b2";
+    this.rejectColor = "#d55e00";
     this.nutsColor = "#09c";
     this.contourColor = "#69b";
 
@@ -309,6 +311,16 @@ class Visualizer {
       var drawProposalArrow = true;
       var drawProposalCov = true;
 
+      // draw control-variate anchor at the posterior mode (for SGLD-CV)
+      if (event.hasOwnProperty("mode")) {
+        this.drawCircle(this.overlayCanvas, {
+          color: "#e69f00",
+          center: event.mode,
+          radius: 0.1,
+          lw: 2,
+        });
+      }
+
       // draw proposal direction vector (for DE-MCMC)
       if (event.hasOwnProperty("inspiration")) {
         this.drawArrow(this.overlayCanvas, {
@@ -328,6 +340,16 @@ class Visualizer {
           color: this.proposalColor,
           lw: 1,
         });
+      }
+
+      // step-size readout (for adaptive schedules such as FUSE)
+      if (event.hasOwnProperty("stepSize")) {
+        context.fillStyle = "#000";
+        context.fillText(
+          "step size \u03B7 = " + event.stepSize.toExponential(2),
+          5 * window.devicePixelRatio,
+          5 * window.devicePixelRatio + 1.2 * this.fontSizePx
+        );
       }
 
       if (event.hasOwnProperty("epsilon")) {
@@ -403,7 +425,7 @@ class Visualizer {
           });
         } else {
           for (var i = 0; i < event.nuts_trajectory.length; ++i) {
-            var color = event.nuts_trajectory[i].type == "accept" ? this.nutsColor : "#f00";
+            var color = event.nuts_trajectory[i].type == "accept" ? this.nutsColor : this.rejectColor;
             this.drawPath(this.overlayCanvas, {
               path: [event.nuts_trajectory[i].from, event.nuts_trajectory[i].to],
               color: color,
@@ -560,7 +582,7 @@ class Visualizer {
       var type = event.trajectory[event.offset].type;
       if (type == "accept" || type == "reject") {
         var path = [event.trajectory[event.offset].from, event.trajectory[event.offset].to];
-        var color = event.trajectory[event.offset].type == "accept" ? this.nutsColor : "#f00";
+        var color = event.trajectory[event.offset].type == "accept" ? this.nutsColor : this.rejectColor;
         this.drawPath(this.overlayCanvas, {
           path: path,
           color: color,
@@ -575,7 +597,7 @@ class Visualizer {
       } else if (type == "left" || type == "right") {
         this.nutsColor = type == "right" ? "#09c" : "#66f";
         var path = [event.trajectory[event.offset + 1].from, event.trajectory[event.offset + 1].to];
-        var color = event.trajectory[event.offset + 1].type == "accept" ? this.nutsColor : "#f00";
+        var color = event.trajectory[event.offset + 1].type == "accept" ? this.nutsColor : this.rejectColor;
         var from = type == "left" ? path[1] : path[0];
         var to = type == "left" ? path[0] : path[1];
         // this.drawArrow(this.overlayCanvas, {from: from, to: to, color: color, lw: 1, arrowScale: 0.7});
