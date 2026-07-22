@@ -21,6 +21,10 @@ Click on an algorithm below to view an interactive demo where you can change alg
 *   [DE-MCMC-Z](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=DE-MCMC-Z&target=banana) [[7]](#ref-7)
 *   [Microcanonical Hamiltonian Monte Carlo (MCHMC)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=MicrocanonicalHamiltonianMC&target=banana) [[8]](#ref-8)
 
+### Non-reversible (piecewise-deterministic) samplers
+*   [Zig-Zag Sampler](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=ZigZag&target=banana) [[12]](#ref-12)
+*   [Bouncy Particle Sampler (BPS)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=BouncyParticle&target=banana) [[13]](#ref-13)
+
 ### Non-Markovian iterative sampling methods
 *   [Stein Variational Gradient Descent (SVGD)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=SVGD&target=banana&delay=0) [[5]](#ref-5)
 *   [Nested Sampling with RadFriends (RadFriends-NS)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=RadFriends-NS&target=banana) [[6]](#ref-6)
@@ -48,6 +52,10 @@ Click on an algorithm below to view an interactive demo where you can change alg
 [10] J. Baker, P. Fearnhead, E. B. Fox, C. Nemeth [Control variates for stochastic gradient MCMC](https://arxiv.org/abs/1706.05439) Statistics and Computing. 2019.
 
 [11] L. Sharrock, C. Nemeth [Tuning-Free Sampling via Optimization on the Space of Probability Measures](https://arxiv.org/abs/2510.25315) (2025)
+
+[12] J. Bierkens, P. Fearnhead, G. Roberts [The Zig-Zag process and super-efficient sampling for Bayesian analysis of big data](https://arxiv.org/abs/1607.03188) Annals of Statistics. 2019.
+
+[13] A. Bouchard-Côté, S. J. Vollmer, A. Doucet [The Bouncy Particle Sampler: A Nonreversible Rejection-Free Markov Chain Monte Carlo Method](https://arxiv.org/abs/1510.02451) Journal of the American Statistical Association. 2018.
 
 ### Running locally
 Clone or download the repository and open `index.html` in your web browser. All dependencies are included in in `lib/`.
