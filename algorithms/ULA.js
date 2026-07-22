@@ -16,7 +16,7 @@ MCMC.registerAlgorithm("ULA", {
   },
 
   attachUI: function (self, folder) {
-    folder.add(self, "sigma", 0.1, 1).step(0.05).name("Proposal &sigma;");
+    folder.add(self, "sigma", 0.1, 1).step(0.05).name("Proposal σ");
     folder.open();
   },
 

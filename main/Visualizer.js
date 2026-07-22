@@ -28,6 +28,26 @@ class Visualizer {
     this.rejectColor = "#d55e00";
     this.nutsColor = "#09c";
     this.contourColor = "#69b";
+    this.colormap = "viridis";
+
+    // theming: each palette's background colour is the identity colour for its
+    // sample-layer blend op (white for multiply, black for lighter/screen), so
+    // sample-cloud fading works uniformly across themes
+    this.theme = "light";
+    this.trails = false;
+    this.trailFade = 0.06;
+    this.themePalettes = {
+      light: {
+        bg: "#ffffff", text: "#333333", contour: "#6699bb", trajectory: "#333333",
+        proposal: "#999999", sampleFill: "rgb(216,216,216)", sampleOp: "multiply",
+        layerOp: "multiply", overlayOp: "multiply",
+      },
+      dark: {
+        bg: "#0e1116", text: "#dddddd", contour: "#88bbdd", trajectory: "#cccccc",
+        proposal: "#999999", sampleFill: "rgb(70,100,120)", sampleOp: "lighter",
+        layerOp: "lighter", overlayOp: "source-over",
+      },
+    };
 
     this.histogramRatio = 0.2;
     this.histBins = 50;
@@ -109,7 +129,8 @@ class Visualizer {
     if (this.showTargetDensity) {
       context.drawImage(this.densityCanvas, 0, 0);
     }
-    context.globalCompositeOperation = "multiply";
+    var p = this.pal();
+    context.globalCompositeOperation = p.layerOp;
     // draw samples canvas
     if (this.showSamples) {
       context.drawImage(this.samplesCanvas, 0, 0);
@@ -120,7 +141,95 @@ class Visualizer {
       context.drawImage(this.yHistCanvas, 0, 0);
     }
     // draw overlay canvas
+    context.globalCompositeOperation = p.overlayOp;
     context.drawImage(this.overlayCanvas, 0, 0);
+  }
+  pal() {
+    return this.themePalettes[this.theme] || this.themePalettes.light;
+  }
+  // switch light/dark theme: recolour strokes, set the page background, and
+  // repaint. Clears the accumulated sample cloud (it was blended for the old
+  // theme), which is acceptable for an occasional theme toggle.
+  setTheme(theme) {
+    this.theme = this.themePalettes[theme] ? theme : "light";
+    var p = this.pal();
+    this.contourColor = p.contour;
+    this.trajectoryColor = p.trajectory;
+    this.proposalColor = p.proposal;
+    document.body.style.background = p.bg;
+    document.body.style.color = p.text;
+    var stats = document.getElementById("stats");
+    if (stats) {
+      stats.style.color = p.text;
+      stats.style.background = this.theme === "dark" ? "rgba(18,22,28,0.7)" : "rgba(255,255,255,0.75)";
+    }
+    if (this.simulation && this.simulation.mcmc && this.simulation.mcmc.initialized) this.reset();
+  }
+  // decay the sample cloud toward the (blend-identity) background colour so
+  // recent samples read brighter than older ones
+  fadeSamples() {
+    var ctx = this.samplesCanvas.getContext("2d");
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = this.trailFade;
+    ctx.fillStyle = this.pal().bg;
+    ctx.fillRect(0, 0, this.samplesCanvas.width, this.samplesCanvas.height);
+    ctx.globalAlpha = 1;
+  }
+  // export the current composited frame as a PNG download
+  savePNG() {
+    var link = document.createElement("a");
+    var s = this.simulation;
+    link.download = "mcmc-" + (s ? s.algorithm + "-" + s.target : "frame") + ".png";
+    link.href = this.canvas.toDataURL("image/png");
+    link.click();
+  }
+  // record ~`seconds` of animation to an animated GIF (downscaled) and download.
+  // Uses the vendored gif.js encoder + web worker (lib/gif.worker.js).
+  recordGIF(seconds) {
+    if (this.recording) return;
+    if (typeof GIF === "undefined") {
+      console.warn("gif.js not loaded");
+      return;
+    }
+    seconds = seconds || 3;
+    var fps = 20;
+    var W = 480;
+    var H = Math.max(1, Math.round((W * this.canvas.height) / this.canvas.width));
+    var tmp = document.createElement("canvas");
+    tmp.width = W;
+    tmp.height = H;
+    var tctx = tmp.getContext("2d");
+    var self = this;
+    var gif = new GIF({
+      workers: 2,
+      quality: 10,
+      width: W,
+      height: H,
+      workerScript: "lib/gif.worker.js",
+      background: this.pal().bg,
+    });
+    this.recording = true;
+    var n = 0;
+    var total = Math.round(seconds * fps);
+    var timer = setInterval(function () {
+      // composite over the theme background (the plot canvas is transparent)
+      tctx.fillStyle = self.pal().bg;
+      tctx.fillRect(0, 0, W, H);
+      tctx.drawImage(self.canvas, 0, 0, W, H);
+      gif.addFrame(tctx, { copy: true, delay: 1000 / fps });
+      if (++n >= total) {
+        clearInterval(timer);
+        gif.on("finished", function (blob) {
+          var link = document.createElement("a");
+          var s = self.simulation;
+          link.download = "mcmc-" + (s ? s.algorithm + "-" + s.target : "clip") + ".gif";
+          link.href = URL.createObjectURL(blob);
+          link.click();
+          self.recording = false;
+        });
+        gif.render();
+      }
+    }, 1000 / fps);
   }
   // transform world-coordinate to pixel coordinate
   transform(x) {
@@ -286,10 +395,11 @@ class Visualizer {
     context.stroke();
   }
   drawSample(canvas, center) {
+    var p = this.pal();
     var context = canvas.getContext("2d");
-    context.globalCompositeOperation = "multiply";
+    context.globalCompositeOperation = p.sampleOp;
     this.drawCircle(canvas, {
-      fill: "rgb(216,216,216)",
+      fill: p.sampleFill,
       center: center,
       radius: 0.02,
       lw: 0,
@@ -650,6 +760,7 @@ class Visualizer {
         color: this.acceptColor,
         lw: 2,
       });
+      if (this.trails) this.fadeSamples();
       this.drawSample(this.samplesCanvas, event.proposal);
       this.drawHistograms();
     }
@@ -661,6 +772,7 @@ class Visualizer {
         color: this.rejectColor,
         lw: 2,
       });
+      if (this.trails) this.fadeSamples();
       this.drawSample(this.samplesCanvas, last);
       this.drawHistograms();
     }
@@ -751,6 +863,14 @@ class Visualizer {
     // draw principle axes
     // this.drawArrow(canvas, { from: last, to: last.add(eigs[0]), color: 'rgba(192,192,192,' +  this.alpha + ')', lw: 1 });
     // this.drawArrow(canvas, { from: last, to: last.add(eigs[1]), color: 'rgba(192,192,192,' +  this.alpha + ')', lw: 1 });
+  }
+  // recolour the density layer in place (e.g. after a colormap change) without
+  // touching the accumulated samples canvas
+  redrawDensity() {
+    var c = this.densityCanvas.getContext("2d");
+    c.clearRect(0, 0, this.densityCanvas.width, this.densityCanvas.height);
+    this.drawDensityContours();
+    this.render();
   }
   drawDensityContours() {
     if (!this.simulation.mcmc.initialized) return;

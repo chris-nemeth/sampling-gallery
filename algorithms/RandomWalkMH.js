@@ -16,7 +16,7 @@ MCMC.registerAlgorithm("RandomWalkMH", {
   },
 
   attachUI: (self, folder) => {
-    folder.add(self, "sigma", 0.05, 2).step(0.05).name("Proposal &sigma;");
+    folder.add(self, "sigma", 0.05, 2).step(0.05).name("Proposal σ");
     folder.open();
   },
 

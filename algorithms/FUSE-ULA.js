@@ -36,7 +36,7 @@ MCMC.registerAlgorithm("FUSE-ULA", {
   },
 
   attachUI: function (self, folder) {
-    folder.add(self, "r_eps", 0.001, 1).step(0.001).name("r&epsilon;");
+    folder.add(self, "r_eps", 0.001, 1).step(0.001).name("rε");
     folder.open();
   },
 

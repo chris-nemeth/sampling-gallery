@@ -57,14 +57,14 @@ MCMC.registerAlgorithm("DualAveragingHMC", {
     folder
       .add(self, "lambda", 0.1, 2)
       .step(0.1)
-      .name("&lambda; = &epsilon;L")
+      .name("λ = εL")
       .onChange((value) => {
         sim.reset();
       });
     folder
       .add(self, "delta", 0.1, 1)
       .step(0.05)
-      .name("&delta;")
+      .name("δ")
       .onChange((value) => {
         sim.reset();
       });

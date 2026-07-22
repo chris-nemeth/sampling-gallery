@@ -52,7 +52,7 @@ MCMC.registerAlgorithm("SGLD-CV", {
   },
 
   attachUI: function (self, folder) {
-    folder.add(self, "sigma", 0.1, 0.5).step(0.05).name("Proposal &sigma;");
+    folder.add(self, "sigma", 0.1, 0.5).step(0.05).name("Proposal σ");
     folder.add(self, "gradientNoise", 0, 5).step(0.25).name("Gradient noise");
     folder.open();
   },

@@ -17,8 +17,8 @@ MCMC.registerAlgorithm("DE-MCMC-Z", {
   },
 
   attachUI: (self, folder) => {
-    folder.add(self, "lambda", 0.1, 3).step(0.1).name("Lambda &lambda;");
-    folder.add(self, "scaling", 0.001, 0.2).step(0.01).name("Scaling &epsilon;");
+    folder.add(self, "lambda", 0.1, 3).step(0.1).name("Lambda λ");
+    folder.add(self, "scaling", 0.001, 0.2).step(0.01).name("Scaling ε");
     folder.open();
   },
 

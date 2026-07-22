@@ -18,7 +18,7 @@ MCMC.registerAlgorithm("MicrocanonicalHamiltonianMC", {
 
   attachUI: (self, folder) => {
     folder.add(self, "leapfrogSteps", 5, 120).step(1).name("Leapfrog Steps");
-    folder.add(self, "dt", 0.05, 0.5).step(0.025).name("Leapfrog &Delta;t");
+    folder.add(self, "dt", 0.05, 0.5).step(0.025).name("Leapfrog Δt");
     folder.open();
   },
 
