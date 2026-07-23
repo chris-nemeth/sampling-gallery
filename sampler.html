@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCMC Interactive Gallery</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ---- app shell (drives the real engine in main/ + algorithms/) ---- */
+    html, body { margin: 0; height: 100%; }
+    body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); overflow: hidden; }
+    #app { display: grid; grid-template-columns: 320px 1fr; height: 100vh; }
+
+    /* rail */
+    #rail { background: var(--color-surface, #fff); border-right: 1px solid var(--color-divider); padding: 20px 20px 24px; overflow-y: auto; }
+    #rail.hidden { display: none; }
+    .kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); }
+    .brand { font-family: var(--font-heading); font-weight: 600; font-size: 24px; line-height: 1.1; margin: 4px 0 16px; }
+    .hr { height: 1px; background: var(--color-divider); border: 0; margin: 16px 0; }
+    .sec-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 10px; }
+    .sec-head h4 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-neutral-700); margin: 0; }
+    .sec-head span { font-size: 12px; color: var(--color-neutral-600); }
+
+    .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .tile { border: 1px solid var(--color-divider); border-radius: 4px; overflow: hidden; background: #fff; cursor: pointer; position: relative; transition: border-color .12s; }
+    .tile:hover { border-color: var(--color-accent-400, #4aa8c4); }
+    .tile.on { border-color: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
+    .tile .thumb { height: 46px; background: #fbfbfa; display: flex; align-items: center; justify-content: center; }
+    .tile .thumb span { font-family: var(--font-heading); font-weight: 600; font-size: 13px; color: var(--color-accent-600, #0088b0); }
+    .tile .name { padding: 5px 7px 6px; font-family: var(--font-heading); font-weight: 600; font-size: 12px; line-height: 1.15; }
+    .tile .dot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); box-shadow: 0 0 0 2px #fff; }
+
+    .params .field { margin-bottom: 12px; }
+    .params .flabel { display: flex; justify-content: space-between; font-size: 13px; color: var(--color-neutral-700); margin-bottom: 4px; }
+    .params .flabel .val { color: var(--color-accent); font-variant-numeric: tabular-nums; }
+    input[type=range] { width: 100%; accent-color: var(--color-accent); }
+
+    .controls { display: flex; gap: 8px; margin-top: 6px; }
+    .controls .btn { flex: 1; }
+
+    .legend { font-size: 12px; color: var(--color-neutral-600); margin-top: 16px; line-height: 1.8; }
+    .legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+    /* main */
+    #main { position: relative; overflow: hidden; }
+    #wrap { position: absolute; inset: 0; }
+    #plot { width: 100%; height: 100%; display: block; }
+    #topbar { position: absolute; top: 22px; left: 26px; right: 26px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+    #nowSampling { max-width: 60%; }
+    #nowSampling .kicker { color: var(--color-accent); }
+    #nowSampling h2 { font-family: var(--font-heading); font-weight: 600; font-size: 30px; margin: 2px 0 8px; }
+    #nowSampling p { font-size: 14px; color: var(--color-neutral-700); margin: 0; line-height: 1.4; }
+
+    #stats { position: absolute; left: 26px; bottom: 22px; background: rgba(255,255,255,.82); border: 1px solid var(--color-divider); border-radius: 6px; padding: 10px 16px; display: flex; gap: 26px; backdrop-filter: blur(3px); }
+    #stats .stat .k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-neutral-600); }
+    #stats .stat .v { font-family: var(--font-heading); font-weight: 600; font-size: 20px; font-variant-numeric: tabular-nums; }
+    #stats .stat .v.acc { color: var(--color-accent); }
+    #hint { position: absolute; right: 26px; bottom: 24px; font-size: 12px; color: var(--color-neutral-500); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside id="rail">
+      <div class="kicker">Interactive Gallery</div>
+      <div class="brand">Markov-chain<br />Monte Carlo</div>
+      <hr class="hr" />
+
+      <div class="sec-head"><h4>Sampler</h4><span id="algoCount"></span></div>
+      <div class="tiles" id="tiles"></div>
+
+      <hr class="hr" />
+      <div class="sec-head"><h4>Target distribution</h4></div>
+      <div class="seg" id="targets" style="width:100%; display:flex;"></div>
+
+      <hr class="hr" />
+      <div class="sec-head"><h4>Parameters</h4></div>
+      <div class="params" id="params"></div>
+      <div class="params">
+        <div class="field">
+          <div class="flabel"><span>Speed</span><span class="val" id="speedVal"></span></div>
+          <input type="range" id="speed" min="1" max="20" step="1" />
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary" id="play"></button>
+        <button class="btn btn-secondary" id="step">Step</button>
+        <button class="btn btn-secondary" id="reset">Reset</button>
+      </div>
+
+      <div class="legend">
+        <div><span class="sw" style="background:#0088b0"></span>Accepted sample</div>
+        <div><span class="sw" style="background:#d6006c"></span>Rejected proposal</div>
+      </div>
+    </aside>
+
+    <section id="main">
+      <div id="wrap"><canvas id="plot"></canvas></div>
+      <div id="topbar">
+        <div id="nowSampling">
+          <div class="kicker">Now sampling</div>
+          <h2 id="curName"></h2>
+          <p id="curDesc"></p>
+        </div>
+      </div>
+      <div id="stats">
+        <div class="stat"><div class="k">Steps</div><div class="v" id="stSteps">0</div></div>
+        <div class="stat"><div class="k">Accept</div><div class="v acc" id="stAcc">—</div></div>
+        <div class="stat"><div class="k">Mean</div><div class="v" id="stMean">(0.00, 0.00)</div></div>
+      </div>
+      <div id="hint">2D density · driven by the MCMC engine</div>
+    </section>
+  </div>
+
+  <!-- real engine: linear algebra + distributions + sampler registry + algorithms -->
+  <script src="lib/linalg.core.js"></script>
+  <script src="lib/linalg.opt.js"></script>
+  <script src="main/MultivariateNormal.js"></script>
+  <script src="main/Colormaps.js"></script>
+  <script src="main/MCMC.js"></script>
+  <script src="algorithms/RandomWalkMH.js"></script>
+  <script src="algorithms/HamiltonianMC.js"></script>
+  <script src="algorithms/MALA.js"></script>
+  <script src="algorithms/NaiveNUTS.js"></script>
+  <script src="algorithms/ULA.js"></script>
+  <script src="algorithms/SGLD.js"></script>
+  <script src="algorithms/GibbsSampling.js"></script>
+  <script src="algorithms/SVGD.js"></script>
+
+  <script>
+    "use strict";
+
+    // Rail tiles → the REAL, registered engine algorithms (MCMC.algorithms[id]).
+    const SAMPLERS = [
+      { id: "RandomWalkMH", label: "Random Walk MH", badge: "RWMH", desc: "Proposes a blind Gaussian hop and accepts it with a probability set by the density ratio." },
+      { id: "HamiltonianMC", label: "Hamiltonian MC", badge: "HMC", desc: "Simulates a frictionless particle rolling across the negative log-density, using gradients for long, informed leaps." },
+      { id: "MALA", label: "MALA", badge: "MALA", desc: "Nudges each proposal uphill along the gradient, then applies a Metropolis correction to stay exact." },
+      { id: "NaiveNUTS", label: "No-U-Turn", badge: "NUTS", desc: "Hamiltonian dynamics that recursively double the trajectory and stop when the path begins to double back." },
+      { id: "ULA", label: "Langevin ULA", badge: "ULA", desc: "Follows the gradient with injected noise and never rejects — fast, but slightly biased near the target." },
+      { id: "SGLD", label: "SGLD", badge: "SGLD", desc: "Langevin dynamics driven by noisy (mini-batch-style) gradients — the workhorse for large-scale Bayesian learning." },
+      { id: "GibbsSampling", label: "Gibbs", badge: "Gibbs", desc: "Updates one coordinate at a time from its full conditional, sweeping through the dimensions." },
+      { id: "SVGD", label: "Stein VGD", badge: "SVGD", desc: "A cloud of particles moves together, pushed toward the density and apart from one another." },
+    ];
+
+    const TARGETS = [
+      { id: "banana", label: "Banana" },
+      { id: "donut", label: "Donut" },
+      { id: "standard", label: "Gauss" },
+      { id: "multimodal", label: "Mix" },
+    ];
+
+    // per-sampler tunable engine properties (surfaced as sliders)
+    const PARAMS = {
+      RandomWalkMH: [{ prop: "sigma", label: "Proposal σ", min: 0.05, max: 2, step: 0.05 }],
+      HamiltonianMC: [
+        { prop: "dt", label: "Leapfrog Δt", min: 0.05, max: 0.5, step: 0.025 },
+        { prop: "leapfrogSteps", label: "Leapfrog steps", min: 5, max: 100, step: 1 },
+      ],
+      MALA: [{ prop: "sigma", label: "Step σ", min: 0.1, max: 1, step: 0.05 }],
+      NaiveNUTS: [{ prop: "dt", label: "Leapfrog Δt", min: 0.025, max: 0.6, step: 0.025 }],
+      ULA: [{ prop: "sigma", label: "Step σ", min: 0.1, max: 1, step: 0.05 }],
+      SGLD: [
+        { prop: "sigma", label: "Step σ", min: 0.1, max: 1, step: 0.05 },
+        { prop: "gradientNoise", label: "Gradient noise", min: 0, max: 10, step: 0.25 },
+      ],
+      GibbsSampling: [],
+      SVGD: [
+        { prop: "epsilon", label: "Step size", min: 0.001, max: 0.1, step: 0.001 },
+        { prop: "h", label: "Bandwidth", min: 0.05, max: 2, step: 0.05 },
+      ],
+    };
+
+    // blue density ramp matching the design's accent
+    const HEAT_STOPS = [[233, 248, 255], [153, 224, 255], [56, 166, 207], [0, 103, 134], [10, 48, 61]];
+
+    const S = {
+      algoId: "HamiltonianMC",
+      target: "banana",
+      playing: true,
+      speed: 3,
+      steps: 0,
+      acc: 0,
+      rej: 0,
+    };
+
+    // the object the engine's algorithms operate on (same contract as Simulation.mcmc)
+    const mcmc = { dim: 2 };
+    let algo = null;
+    let heat = null; // offscreen heatmap canvas
+    let extent = null; // {xmin,xmax,ymin,ymax}
+    const plot = document.getElementById("plot");
+    let W = 0, H = 0, dpr = 1;
+
+    function pointAt(x, y) { const p = zeros(2, 1); p[0] = x; p[1] = y; return p; }
+
+    function setExtent() {
+      const t = MCMC.targets[S.target];
+      const xmin = t.xmin, xmax = t.xmax;
+      const asp = H > 0 && W > 0 ? H / W : 0.6;
+      const ymin = xmin * asp, ymax = xmax * asp;
+      extent = { xmin, xmax, ymin, ymax };
+    }
+
+    function buildHeat() {
+      if (!extent) return;
+      const t = MCMC.targets[S.target];
+      const NW = 220, NH = Math.max(2, Math.round(220 * (extent.ymax - extent.ymin) / (extent.xmax - extent.xmin)));
+      const buf = document.createElement("canvas"); buf.width = NW; buf.height = NH;
+      const g = buf.getContext("2d"); const img = g.createImageData(NW, NH);
+      const vals = []; let mx = -1e30;
+      for (let j = 0; j < NH; j++) for (let i = 0; i < NW; i++) {
+        const x = extent.xmin + (extent.xmax - extent.xmin) * i / (NW - 1);
+        const y = extent.ymax - (extent.ymax - extent.ymin) * j / (NH - 1);
+        const v = t.logDensity(pointAt(x, y)); vals.push(v); if (v > mx) mx = v;
+      }
+      for (let k = 0; k < vals.length; k++) {
+        let p = Math.pow(Math.exp(vals[k] - mx), 0.55);
+        const seg = Math.min(0.999, p) * (HEAT_STOPS.length - 1), si = seg | 0, f = seg - si;
+        const a = HEAT_STOPS[si], b = HEAT_STOPS[si + 1] || a, o = k * 4;
+        img.data[o] = a[0] + (b[0] - a[0]) * f;
+        img.data[o + 1] = a[1] + (b[1] - a[1]) * f;
+        img.data[o + 2] = a[2] + (b[2] - a[2]) * f;
+        img.data[o + 3] = 255 * Math.min(1, p * 1.1);
+      }
+      g.putImageData(img, 0, 0); heat = buf;
+    }
+
+    function setTarget(id) {
+      S.target = id;
+      const t = MCMC.targets[id];
+      mcmc.logDensity = t.logDensity;
+      mcmc.gradLogDensity = t.gradLogDensity;
+      setExtent(); buildHeat();
+      resetSampler();
+      renderTargets();
+    }
+
+    function applyParams() {
+      (PARAMS[S.algoId] || []).forEach((p) => { if (typeof S["p_" + p.prop] === "number") mcmc[p.prop] = S["p_" + p.prop]; });
+    }
+
+    function setSampler(id) {
+      S.algoId = id;
+      algo = MCMC.algorithms[id];
+      // wire the engine's method references onto the state object, as Simulation
+      // does — some algorithms (e.g. SVGD) call self.reset(self) inside init()
+      mcmc.init = algo.init; mcmc.reset = algo.reset; mcmc.step = algo.step;
+      algo.init(mcmc);
+      // seed slider-backed values from the engine defaults, then apply
+      (PARAMS[id] || []).forEach((p) => { S["p_" + p.prop] = mcmc[p.prop]; });
+      applyParams();
+      resetSampler();
+      renderTiles(); renderParams(); renderNow();
+    }
+
+    function resetSampler() {
+      if (!algo) return;
+      applyParams();
+      algo.reset(mcmc);
+      S.steps = 0; S.acc = 0; S.rej = 0;
+    }
+
+    function stepOnce() {
+      const q = [];
+      algo.step(mcmc, { queue: q });
+      for (const e of q) { if (e.type === "accept") S.acc++; else if (e.type === "reject") S.rej++; }
+      S.steps++;
+    }
+
+    // ---------- rendering ----------
+    function resize() {
+      const wrap = document.getElementById("wrap");
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = wrap.clientWidth; H = wrap.clientHeight;
+      plot.width = W * dpr; plot.height = H * dpr;
+      const g = plot.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      setExtent(); buildHeat();
+    }
+
+    function render() {
+      const g = plot.getContext("2d"); if (!g) return;
+      g.clearRect(0, 0, W, H);
+      if (heat) { g.imageSmoothingEnabled = true; g.globalAlpha = 0.92; g.drawImage(heat, 0, 0, W, H); g.globalAlpha = 1; }
+      const sx = (x) => (x - extent.xmin) / (extent.xmax - extent.xmin) * W;
+      const sy = (y) => H - (y - extent.ymin) / (extent.ymax - extent.ymin) * H;
+      const chain = mcmc.chain || [];
+      const start = Math.max(0, chain.length - 2500);
+      for (let i = start; i < chain.length; i++) {
+        const p = chain[i];
+        g.globalAlpha = 0.1 + 0.55 * ((i - start) / Math.max(1, chain.length - start));
+        g.fillStyle = "#0088b0";
+        g.beginPath(); g.arc(sx(p[0]), sy(p[1]), 2.1, 0, 7); g.fill();
+      }
+      g.globalAlpha = 1;
+    }
+
+    // ---------- UI ----------
+    function renderTiles() {
+      const el = document.getElementById("tiles");
+      el.innerHTML = "";
+      SAMPLERS.forEach((a) => {
+        const on = a.id === S.algoId;
+        const tile = document.createElement("div");
+        tile.className = "tile" + (on ? " on" : "");
+        tile.innerHTML =
+          '<div class="thumb"><span></span></div>' +
+          '<div class="name"></div>' +
+          (on ? '<div class="dot"></div>' : "");
+        tile.querySelector(".thumb span").textContent = a.badge;
+        tile.querySelector(".name").textContent = a.label;
+        tile.addEventListener("click", () => setSampler(a.id));
+        el.appendChild(tile);
+      });
+      document.getElementById("algoCount").textContent = SAMPLERS.length + " algorithms";
+    }
+
+    function renderTargets() {
+      const el = document.getElementById("targets");
+      el.innerHTML = "";
+      TARGETS.forEach((t) => {
+        const on = t.id === S.target;
+        const lab = document.createElement("label");
+        lab.className = "seg-opt";
+        lab.style.flex = "1"; lab.style.justifyContent = "center";
+        const input = document.createElement("input");
+        input.type = "radio"; input.name = "tgt"; input.checked = on;
+        input.addEventListener("change", () => setTarget(t.id));
+        const span = document.createElement("span"); span.textContent = t.label;
+        lab.appendChild(input); lab.appendChild(span);
+        el.appendChild(lab);
+      });
+    }
+
+    function renderParams() {
+      const el = document.getElementById("params");
+      el.innerHTML = "";
+      const specs = PARAMS[S.algoId] || [];
+      if (specs.length === 0) {
+        el.innerHTML = '<div style="font-size:13px;color:var(--color-neutral-600)">No tunable parameters.</div>';
+        return;
+      }
+      specs.forEach((p) => {
+        const field = document.createElement("div"); field.className = "field";
+        const val = S["p_" + p.prop];
+        const fmt = (v) => (p.step >= 1 ? Math.round(v) : (+v).toFixed(2));
+        const flabel = document.createElement("div"); flabel.className = "flabel";
+        const nameSpan = document.createElement("span"); nameSpan.textContent = p.label;
+        const valSpan = document.createElement("span"); valSpan.className = "val"; valSpan.textContent = fmt(val);
+        flabel.appendChild(nameSpan); flabel.appendChild(valSpan);
+        const input = document.createElement("input");
+        input.type = "range"; input.min = p.min; input.max = p.max; input.step = p.step; input.value = val;
+        input.addEventListener("input", () => {
+          S["p_" + p.prop] = +input.value; mcmc[p.prop] = +input.value; valSpan.textContent = fmt(+input.value);
+        });
+        field.appendChild(flabel); field.appendChild(input);
+        el.appendChild(field);
+      });
+    }
+
+    function renderNow() {
+      const a = SAMPLERS.find((x) => x.id === S.algoId);
+      document.getElementById("curName").textContent = a.label;
+      document.getElementById("curDesc").textContent = a.desc;
+    }
+
+    function updatePlay() { document.getElementById("play").textContent = S.playing ? "⏸ Pause" : "▶ Play"; }
+
+    let lastStat = 0;
+    function updateStats(force) {
+      const now = performance.now();
+      if (!force && now - lastStat < 180) return;
+      lastStat = now;
+      const total = S.acc + S.rej;
+      document.getElementById("stSteps").textContent = S.steps.toLocaleString();
+      document.getElementById("stAcc").textContent = total > 0 ? Math.round(100 * S.acc / total) + "%" : "—";
+      const chain = mcmc.chain || [];
+      let m0 = 0, m1 = 0;
+      for (let i = 0; i < chain.length; i++) { m0 += chain[i][0]; m1 += chain[i][1]; }
+      if (chain.length) { m0 /= chain.length; m1 /= chain.length; }
+      document.getElementById("stMean").textContent = "(" + m0.toFixed(2) + ", " + m1.toFixed(2) + ")";
+    }
+
+    function loop() {
+      if (S.playing && algo) { for (let i = 0; i < S.speed; i++) stepOnce(); }
+      render();
+      updateStats(false);
+      requestAnimationFrame(loop);
+    }
+
+    // wire global controls
+    document.getElementById("play").addEventListener("click", () => { S.playing = !S.playing; updatePlay(); });
+    document.getElementById("step").addEventListener("click", () => { for (let i = 0; i < S.speed; i++) stepOnce(); render(); updateStats(true); });
+    document.getElementById("reset").addEventListener("click", () => { resetSampler(); render(); updateStats(true); });
+    const speedEl = document.getElementById("speed");
+    speedEl.value = S.speed; document.getElementById("speedVal").textContent = S.speed;
+    speedEl.addEventListener("input", () => { S.speed = +speedEl.value; document.getElementById("speedVal").textContent = S.speed; });
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("load", () => {
+      resize();
+      renderTargets();
+      setSampler(S.algoId);
+      setTarget(S.target);
+      updatePlay();
+      requestAnimationFrame(loop);
+    });
+  </script>
+</body>
+</html>
