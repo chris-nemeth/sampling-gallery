@@ -28,74 +28,74 @@
       <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Start here — the editor's pick</div>
       <h2 style="font-size:40px;line-height:1.04;margin:0 0 14px">Watch a sampler explore, one step at a time</h2>
       <p style="font-size:16px;color:var(--color-neutral-800);margin:0 0 14px">Every method faces the same problem: map out a probability distribution you can only evaluate point by point. Pick a target — a banana, a ring, a mixture of hills — choose an algorithm, and watch it feel its way across the landscape. Tune the step size and speed as it runs, and watch the acceptance rate and running mean update live.</p>
-      <div style="display:flex;gap:12px;align-items:center;margin-top:22px"><a class="btn btn-primary" href="sampler.html" style="font-size:15px;padding:12px 22px">Open Hamiltonian Monte Carlo →</a><span style="font-size:13px;color:var(--color-neutral-600)">or choose from the gallery below</span></div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:22px"><a class="btn btn-primary" href="sampler.html?algorithm=HamiltonianMC" style="font-size:15px;padding:12px 22px">Open Hamiltonian Monte Carlo →</a><span style="font-size:13px;color:var(--color-neutral-600)">or choose from the gallery below</span></div>
     </div>
     <figure style="border-radius:3px;overflow:hidden;box-shadow:var(--shadow-md);margin:0"><img src="docs/hmc.gif" alt="Hamiltonian Monte Carlo animation" style="width:100%;display:block;background:#fff"></figure>
   </section>
   <section style="padding-top:52px">
     <div style="border-top:2px solid var(--color-text);padding-top:10px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px"><h3 style="font-size:26px;margin:0">Standard MCMC methods</h3><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600)">Markov chains that propose &amp; accept</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 32px">
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=RandomWalkMH">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><img class="en-thumb" src="docs/rwmh.gif" alt="RWMH" style="width:100%;height:100%;object-fit:cover;object-position:center 32%;filter:grayscale(.35) contrast(1.1)"></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Random Walk Metropolis</span></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Blind Gaussian hops, accepted by the density ratio — the simplest sampler there is.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=AdaptiveMH">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">AMH</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Adaptive Metropolis</span><sup style="font-size:11px;color:var(--color-accent-2)">[1]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Learns the proposal covariance from its own history as it runs.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=HamiltonianMC">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><img class="en-thumb" src="docs/hmc.gif" alt="HMC" style="width:100%;height:100%;object-fit:cover;object-position:center 32%;filter:grayscale(.35) contrast(1.1)"></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Hamiltonian Monte Carlo</span><sup style="font-size:11px;color:var(--color-accent-2)">[2]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Rolls a frictionless particle along gradients to take long, informed leaps.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=NaiveNUTS">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><img class="en-thumb" src="docs/nuts.gif" alt="NUTS" style="width:100%;height:100%;object-fit:cover;object-position:center 32%;filter:grayscale(.35) contrast(1.1)"></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">No-U-Turn Sampler</span><sup style="font-size:11px;color:var(--color-accent-2)">[2]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">HMC that picks its own path length, stopping when the trajectory doubles back.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=MALA">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><img class="en-thumb" src="docs/mala.gif" alt="MALA" style="width:100%;height:100%;object-fit:cover;object-position:center 32%;filter:grayscale(.35) contrast(1.1)"></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Metropolis-adjusted Langevin</span><sup style="font-size:11px;color:var(--color-accent-2)">[3]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Nudges proposals uphill along the gradient, then corrects to stay exact.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=ULA">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">ULA</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Unadjusted Langevin</span><sup style="font-size:11px;color:var(--color-accent-2)">[3]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Gradient plus noise, never rejecting — fast but slightly biased.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=SGLD">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">SGLD</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Stochastic Gradient Langevin</span><sup style="font-size:11px;color:var(--color-accent-2)">[9]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Langevin steps from noisy mini-batch gradients for large-scale learning.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=SGLD-CV">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">SGLD-CV</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">SGLD with Control Variates</span><sup style="font-size:11px;color:var(--color-accent-2)">[10]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Anchors the noisy gradient to the mode to cut its variance.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=FUSE-ULA">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">FUSE</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Tuning-free ULA (FUSE)</span><sup style="font-size:11px;color:var(--color-accent-2)">[11]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Sets its own step size by optimising over the space of measures.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=H2MC">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">H2MC</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Hessian-Hamiltonian (H2MC)</span><sup style="font-size:11px;color:var(--color-accent-2)">[4]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Uses curvature as well as gradient to shape anisotropic proposals.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=GibbsSampling">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">GIBBS</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Gibbs Sampling</span></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Updates one coordinate at a time from its exact conditional.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=DE-MCMC-Z">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">DE-Z</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Differential Evolution (Z)</span><sup style="font-size:11px;color:var(--color-accent-2)">[7]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">A population of chains proposes moves from each other’s differences.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=MicrocanonicalHamiltonianMC">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">MCHMC</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Microcanonical HMC</span><sup style="font-size:11px;color:var(--color-accent-2)">[8]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Constant-energy dynamics on a tuned manifold for efficient mixing.</p>
@@ -105,12 +105,12 @@
   <section style="padding-top:52px">
     <div style="border-top:2px solid var(--color-text);padding-top:10px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px"><h3 style="font-size:26px;margin:0">Non-reversible samplers</h3><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600)">Piecewise-deterministic, rejection-free</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 32px">
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=ZigZag">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">ZZ</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Zig-Zag Sampler</span><sup style="font-size:11px;color:var(--color-accent-2)">[12]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">A particle moves in straight lines, flipping one velocity at a time.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=BouncyParticle">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">BPS</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Bouncy Particle Sampler</span><sup style="font-size:11px;color:var(--color-accent-2)">[13]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Ballistic motion that reflects off the density’s gradient — no rejections.</p>
@@ -120,12 +120,12 @@
   <section style="padding-top:52px">
     <div style="border-top:2px solid var(--color-text);padding-top:10px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px"><h3 style="font-size:26px;margin:0">Non-Markovian iterative methods</h3><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600)">Particle ensembles &amp; nested sampling</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 32px">
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=SVGD">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><img class="en-thumb" src="docs/svgd.gif" alt="SVGD" style="width:100%;height:100%;object-fit:cover;object-position:center 32%;filter:grayscale(.35) contrast(1.1)"></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Stein Variational Gradient</span><sup style="font-size:11px;color:var(--color-accent-2)">[5]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">A cloud of particles moves as one, toward the density and apart from itself.</p>
       </a>
-      <a class="entry" href="sampler.html">
+      <a class="entry" href="sampler.html?algorithm=RadFriends-NS">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">NS</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Nested Sampling (RadFriends)</span><sup style="font-size:11px;color:var(--color-accent-2)">[6]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Peels the distribution in shells of increasing likelihood.</p>
