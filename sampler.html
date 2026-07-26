@@ -316,7 +316,7 @@
         lab.style.justifyContent = "center";
         const input = document.createElement("input");
         input.type = "radio"; input.name = "tgt"; input.checked = t.id === sim.target;
-        input.addEventListener("change", () => { sim.setTarget(t.id); surf3d = null; });
+        input.addEventListener("change", () => { sim.setTarget(t.id); surf3d = null; evt3d = null; });
         const span = document.createElement("span"); span.textContent = t.label;
         lab.appendChild(input); lab.appendChild(span);
         el.appendChild(lab);
@@ -343,6 +343,7 @@
       // mcmc object; stale weights would corrupt the next sampler's
       // histograms/stats, so clear them on every switch
       delete sim.mcmc.chain_weights;
+      evt3d = null;
       sim.setAlgorithm(id);
       renderTiles(); renderParams(); renderNow();
     }
@@ -379,9 +380,46 @@
     const plot3d = document.getElementById("plot3d");
     let mode = "2d";
     let surf3d = null; // cached height grid, invalidated on target change
+    let evt3d = null; // current step's geometry (trajectory / gradient / arrows)
     let angle = 0.7;
-    const tilt = 0.62;
+    const tilt = 0.74; // sin(elevation): ~48° above the plane, looking down
     let dragging3d = false, lastX3d = 0;
+
+    // Record the engine's visualization events (the same stream the 2D
+    // Visualizer consumes) so the 3D view can draw the current step's
+    // geometry — trajectories, gradient arrows, proposal/accept arrows —
+    // lifted onto the density surface. Only the latest step is kept, matching
+    // the 2D overlay which is cleared on every proposal.
+    function record3dEvent(ev) {
+      const cp = (p) => [p[0], p[1]];
+      const ch = sim.mcmc.chain || [];
+      const last = ch.length > 1 ? cp(ch[ch.length - 2]) : ch.length ? cp(ch[ch.length - 1]) : null;
+      if (ev.type === "proposal") {
+        evt3d = {};
+        if (ev.trajectory) evt3d.trajectory = ev.trajectory.map(cp);
+        if (ev.nuts_trajectory)
+          evt3d.nuts = ev.nuts_trajectory
+            .filter((s) => s.from && s.to)
+            .map((s) => ({ from: cp(s.from), to: cp(s.to), ok: s.type === "accept" }));
+        if (ev.gradient && last)
+          evt3d.gradient = { from: last, to: [last[0] + ev.gradient[0], last[1] + ev.gradient[1]] };
+        if (ev.initialMomentum && last)
+          evt3d.momentum = { from: last, to: [last[0] + ev.initialMomentum[0], last[1] + ev.initialMomentum[1]] };
+        if (!ev.trajectory && !ev.nuts_trajectory && ev.proposal && last)
+          evt3d.propLine = { from: last, to: cp(ev.proposal) };
+      } else if (ev.type === "accept" || ev.type === "reject") {
+        if (evt3d && last) evt3d.result = { from: last, to: cp(ev.proposal), ok: ev.type === "accept" };
+      } else if (ev.type === "svgd-step") {
+        // particle gradient field, scaled exactly like the 2D renderer
+        evt3d = {
+          svgd: ev.x.map((p, i) => {
+            const n = Math.max(1e-9, Math.hypot(ev.gradx[i][0], ev.gradx[i][1]));
+            const s = 0.25 / n;
+            return { from: cp(p), to: [p[0] + ev.gradx[i][0] * s, p[1] + ev.gradx[i][1] * s], a: Math.min(10 * n, 1) };
+          }),
+        };
+      }
+    }
 
     function buildSurf() {
       const t = MCMC.targets[sim.target];
@@ -426,12 +464,16 @@
       if (!surf3d) buildSurf();
       const S = surf3d, N = S.N;
       const M = Math.min(W, H);
-      const cx = W / 2, cy = H * 0.58;
-      const spanX = M * 0.44, spanY = M * 0.44 * tilt, hPx = M * 0.30;
+      const cx = W / 2, cy = H * 0.56;
+      // tilt applied once: sin(elevation) foreshortening of the ground plane —
+      // a high-ish viewpoint so the floor never overlaps the peaks on screen
+      const spanX = M * 0.44, spanY = M * 0.44 * tilt, hPx = M * 0.26;
       const ca = Math.cos(angle), sa = Math.sin(angle);
       const proj = (gx, gy, gz) => {
         const rx = gx * ca - gy * sa, ry = gx * sa + gy * ca;
-        return { x: cx + rx * spanX, y: cy - ry * spanY * 0.55 - gz * hPx, d: -ry };
+        // d is far-ness: larger ry projects higher on screen, i.e. farther
+        // from the viewer, and must be drawn FIRST (painter's algorithm)
+        return { x: cx + rx * spanX, y: cy - ry * spanY - gz * hPx, d: ry };
       };
       const zAt = (i, j) => S.H[j * N + i];
       const stops = surfStops();
@@ -481,6 +523,50 @@
         g.beginPath(); g.arc(pt.x, pt.y, 2.2, 0, 7); g.fill();
       }
       g.globalAlpha = 1;
+      // current step's geometry (same events the 2D overlay draws), lifted
+      // onto the surface: trajectories, NUTS tree, gradient/momentum arrows,
+      // proposal and accept/reject arrows, SVGD gradient field
+      if (evt3d) {
+        const clampW = (v) => Math.max(S.xmin, Math.min(S.xmax, v));
+        const W2S = (pt, lift) => {
+          const x = clampW(pt[0]), y = clampW(pt[1]);
+          const gx = ((x - S.xmin) / span) * 2 - 1, gy = ((y - S.xmin) / span) * 2 - 1;
+          return proj(gx, gy, hAt(x, y) + (lift == null ? 0.02 : lift));
+        };
+        const seg = (a, b, color, lw, alpha) => {
+          const p0 = W2S(a), p1 = W2S(b);
+          g.strokeStyle = color; g.lineWidth = lw; g.globalAlpha = alpha == null ? 1 : alpha;
+          g.beginPath(); g.moveTo(p0.x, p0.y); g.lineTo(p1.x, p1.y); g.stroke();
+          g.globalAlpha = 1;
+        };
+        const arrow = (a, b, color, lw, alpha) => {
+          const p0 = W2S(a), p1 = W2S(b);
+          g.strokeStyle = color; g.lineWidth = lw; g.globalAlpha = alpha == null ? 1 : alpha;
+          g.beginPath(); g.moveTo(p0.x, p0.y); g.lineTo(p1.x, p1.y);
+          const t = Math.atan2(p1.y - p0.y, p1.x - p0.x) + Math.PI, s = 7;
+          g.moveTo(p1.x + s * Math.cos(t + Math.PI / 8), p1.y + s * Math.sin(t + Math.PI / 8));
+          g.lineTo(p1.x, p1.y);
+          g.lineTo(p1.x + s * Math.cos(t - Math.PI / 8), p1.y + s * Math.sin(t - Math.PI / 8));
+          g.stroke(); g.globalAlpha = 1;
+        };
+        if (evt3d.svgd) for (const v of evt3d.svgd) arrow(v.from, v.to, "rgba(30,30,30,0.85)", 1, v.a);
+        if (evt3d.momentum) arrow(evt3d.momentum.from, evt3d.momentum.to, "#999", 1);
+        if (evt3d.gradient) arrow(evt3d.gradient.from, evt3d.gradient.to, "#0099cc", 1.5);
+        if (evt3d.propLine) arrow(evt3d.propLine.from, evt3d.propLine.to, "#999", 1);
+        if (evt3d.trajectory && evt3d.trajectory.length > 1) {
+          g.strokeStyle = "#333"; g.lineWidth = 1.5;
+          g.beginPath();
+          let p0 = W2S(evt3d.trajectory[0]);
+          g.moveTo(p0.x, p0.y);
+          for (let i = 1; i < evt3d.trajectory.length; i++) {
+            const p1 = W2S(evt3d.trajectory[i]);
+            g.lineTo(p1.x, p1.y);
+          }
+          g.stroke();
+        }
+        if (evt3d.nuts) for (const s2 of evt3d.nuts) seg(s2.from, s2.to, s2.ok ? "#0099cc" : "#d55e00", 1, 0.9);
+        if (evt3d.result) arrow(evt3d.result.from, evt3d.result.to, evt3d.result.ok ? "#0072b2" : "#d55e00", 2);
+      }
       if (chain.length) {
         const cpt = chain[chain.length - 1];
         if (cpt[0] >= S.xmin && cpt[0] <= S.xmax && cpt[1] >= S.xmin && cpt[1] <= S.xmax) {
@@ -511,6 +597,16 @@
       viz.simulation = sim;
       viz.colormap = "classic"; // flat-blue density, matching the Broadsheet accent
       viz.showDiagnostics = false; // stats shown in our own #statsBox instead
+
+      // tap the visualization event stream for the 3D overlay: record each
+      // event just before the 2D Visualizer consumes it
+      const origDequeue = viz.dequeue.bind(viz);
+      viz.dequeue = function () {
+        if (viz.queue.length) {
+          try { record3dEvent(viz.queue[0]); } catch (e) {}
+        }
+        return origDequeue();
+      };
 
       // honour ?algorithm=&target= links from the gallery page
       const q = new URLSearchParams(window.location.search);
@@ -546,7 +642,7 @@
       });
       document.getElementById("play").addEventListener("click", () => { sim.autoplay = !sim.autoplay; updatePlay(); });
       document.getElementById("step").addEventListener("click", () => sim.step());
-      document.getElementById("reset").addEventListener("click", () => sim.reset());
+      document.getElementById("reset").addEventListener("click", () => { evt3d = null; sim.reset(); });
       document.getElementById("savePNG").addEventListener("click", () => {
         if (mode === "3d") {
           const a = document.createElement("a");
