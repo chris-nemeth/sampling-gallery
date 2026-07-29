@@ -61,14 +61,17 @@ class Visualizer {
     this.yHistCanvas = document.createElement("canvas");
   }
   resize() {
-    var height = document.body.clientHeight;
-    var width = document.body.clientWidth;
+    // size to an explicit container when one is set (embedded layouts, e.g.
+    // sampler.html's main panel); default to the whole document body
+    var host = this.container || document.body;
+    var height = host.clientHeight;
+    var width = host.clientWidth;
 
     var histogramSize = Math.min(height, width) * this.histogramRatio;
 
-    // resize canvas to fit window and scale by devicePixelRatio for HiDPI displays
-    this.canvas.width = document.body.clientWidth * window.devicePixelRatio;
-    this.canvas.height = document.body.clientHeight * window.devicePixelRatio;
+    // resize canvas to fit host and scale by devicePixelRatio for HiDPI displays
+    this.canvas.width = width * window.devicePixelRatio;
+    this.canvas.height = height * window.devicePixelRatio;
     this.canvas.style.zoom = 1 / window.devicePixelRatio;
 
     this.xHistCanvas.width = this.canvas.width;

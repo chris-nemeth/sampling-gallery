@@ -1,86 +1,43 @@
-## The Markov-chain Monte Carlo Interactive Gallery
+# MCMC Visualisations
 
-*Example*: Hamiltonian Monte Carlo
+**Live demo: https://chris-nemeth.github.io/MCMC-Visualisations/**
 
-<a href="https://chi-feng.github.io/mcmc-demo/app.html?algorithm=HamiltonianMC&target=banana" target="_blank"><img src="https://raw.githubusercontent.com/chi-feng/mcmc-demo/master/docs/hmc.gif" width="400" /></a>
+An interactive gallery of Markov-chain Monte Carlo (and related) sampling
+algorithms — animated, tunable, and explained in plain language. Static,
+buildless HTML: open it in a browser, or serve the folder.
 
-Click on an algorithm below to view an interactive demo where you can change algorithm parameters on-the-fly:
+## Pages
+- `index.html` — landing atlas: all algorithms grouped by family, with
+  animated thumbnails and plain-language descriptions. Links into the sampler.
+- `sampler.html` — the interactive app, driven by the project's real MCMC
+  engine (`lib/`, `main/`, `algorithms/`): every one of the 20 samplers in the
+  rail runs its genuine algorithm. Six target distributions (banana / donut /
+  Gaussian / mixture / funnel / squiggle), per-sampler tunable parameters,
+  live diagnostics (steps / acceptance / mean / ESS), a 2D view with proposal
+  arrows, gradients and trajectories rendered live, and a rotating 3D
+  density-surface view with the chain and step geometry lifted onto it.
+- `classic.html` — the original interface (`app.html`), kept for continuity:
+  a full-window 2D visualizer with a lil-gui control panel.
+- `styles.css` — Broadsheet design tokens + component classes.
+- `docs/*.gif` — animation thumbnails used by the landing page.
 
-### Standard MCMC methods 
-*   [Random Walk Metropolis Hastings](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=RandomWalkMH&target=banana)
-*   [Adaptive Metropolis Hastings](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=AdaptiveMH&target=banana) [[1]](#ref-1)
-*   [Hamiltonian Monte Carlo](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=HamiltonianMC&target=banana) [[2]](#ref-2)
-*   [No-U-Turn Sampler](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=NaiveNUTS&target=banana) [[2]](#ref-2)
-*   [Metropolis-adjusted Langevin Algorithm (MALA)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=MALA&target=banana) [[3]](#ref-3)
-*   [Unadjusted Langevin Algorithm (ULA)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=ULA&target=banana) [[3]](#ref-3)
-*   [Stochastic Gradient Langevin Dynamics (SGLD)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=SGLD&target=banana) [[9]](#ref-9)
-*   [SGLD with Control Variates (SGLD-CV)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=SGLD-CV&target=banana) [[10]](#ref-10)
-*   [Tuning-free ULA (FUSE)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=FUSE-ULA&target=banana) [[11]](#ref-11)
-*   [Hessian-Hamiltonian Monte Carlo (H2MC)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=H2MC&target=banana) [[4]](#ref-4)
-*   [Gibbs Sampling](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=GibbsSampling&target=banana)
-*   [DE-MCMC-Z](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=DE-MCMC-Z&target=banana) [[7]](#ref-7)
-*   [Microcanonical Hamiltonian Monte Carlo (MCHMC)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=MicrocanonicalHamiltonianMC&target=banana) [[8]](#ref-8)
+## Samplers
+Random Walk MH, Adaptive MH, HMC, HMC with dual averaging, NUTS (naive,
+efficient, and dual-averaging), MALA, ULA, SGLD, SGLD-CV, tuning-free ULA
+(FUSE), H2MC, Microcanonical HMC, Gibbs, DE-MCMC-Z, Zig-Zag, Bouncy Particle
+Sampler, SVGD, and Nested Sampling (RadFriends).
 
-### Non-reversible (piecewise-deterministic) samplers
-*   [Zig-Zag Sampler](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=ZigZag&target=banana) [[12]](#ref-12)
-*   [Bouncy Particle Sampler (BPS)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=BouncyParticle&target=banana) [[13]](#ref-13)
+## Run locally
+Open `index.html` in any modern browser, or from the folder root:
 
-### Non-Markovian iterative sampling methods
-*   [Stein Variational Gradient Descent (SVGD)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=SVGD&target=banana&delay=0) [[5]](#ref-5)
-*   [Nested Sampling with RadFriends (RadFriends-NS)](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=RadFriends-NS&target=banana) [[6]](#ref-6)
+    python3 -m http.server
 
-### References
+then visit http://localhost:8000/
 
-[1] H. Haario, E. Saksman, and J. Tamminen, [An adaptive Metropolis algorithm](http://projecteuclid.org/euclid.bj/1080222083) (2001)
-
-[2] M. D. Hoffman, A. Gelman, [The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo](http://arxiv.org/abs/1111.4246) (2011)
-
-[3] G. O. Roberts, R. L. Tweedie, [Exponential Convergence of Langevin Distributions and Their Discrete Approximations](http://www2.stat.duke.edu/~scs/Courses/Stat376/Papers/Langevin/RobertsTweedieBernoulli1996.pdf) (1996)
-
-[4] Li, Tzu-Mao, et al. [Anisotropic Gaussian mutations for metropolis light transport through Hessian-Hamiltonian dynamics](https://people.csail.mit.edu/tzumao/h2mc/) ACM Transactions on Graphics 34.6 (2015): 209.
-
-[5] Q. Liu, et al. [Stein Variational Gradient Descent: A General Purpose Bayesian Inference Algorithm](http://www.cs.dartmouth.edu/~dartml/project.html?p=vgd) Advances in Neural Information Processing Systems. 2016.
-
-[6] J. Buchner [A statistical test for Nested Sampling algorithms](https://arxiv.org/abs/1407.5459) Statistics and Computing. 2014.
-
-[7] Cajo J. F. ter Braak & Jasper A. Vrugt [Differential Evolution Markov Chain with snooker updater and fewer chains](https://link.springer.com/article/10.1007/s11222-008-9104-9) Statistics and Computing. 2008.
-
-[8] J. Robnik, G. B. De Luca, E. Silverstein, U. Seljak [Microcanonical Hamiltonian Monte Carlo](https://arxiv.org/abs/2212.08549) (2022)
-
-[9] M. Welling, Y. W. Teh [Bayesian Learning via Stochastic Gradient Langevin Dynamics](https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf) ICML. 2011.
-
-[10] J. Baker, P. Fearnhead, E. B. Fox, C. Nemeth [Control variates for stochastic gradient MCMC](https://arxiv.org/abs/1706.05439) Statistics and Computing. 2019.
-
-[11] L. Sharrock, C. Nemeth [Tuning-Free Sampling via Optimization on the Space of Probability Measures](https://arxiv.org/abs/2510.25315) (2025)
-
-[12] J. Bierkens, P. Fearnhead, G. Roberts [The Zig-Zag process and super-efficient sampling for Bayesian analysis of big data](https://arxiv.org/abs/1607.03188) Annals of Statistics. 2019.
-
-[13] A. Bouchard-Côté, S. J. Vollmer, A. Doucet [The Bouncy Particle Sampler: A Nonreversible Rejection-Free Markov Chain Monte Carlo Method](https://arxiv.org/abs/1510.02451) Journal of the American Statistical Association. 2018.
-
-### Running locally
-Clone or download the repository and open `index.html` in your web browser. All dependencies are included in in `lib/`.
-
-### Adding an algorithm
-1. Copy one of the existing algorithms in the `algorithms` directory (a good starting point is `algorithms/HamiltonianMC.js`). 
-1. in `app.html` include the your algorithm's javascript file at the bottom of the page. This will add your algorithm to the dropdown menu. 
-1. Add any new visualizations to the `Visualizer.prototype.dequeue` function defined in `main/Visualizer.js`. The MCMC simulation adds visualization "events" onto an animation queue. Most common events such as accepting or rejecting a proposal have already been implemented. The renderer composites the contents of three offscreen canvases (densityCanvas, samplesCanvas, and overlayCanvas)
-1. Add a link to your algorithm in `README.md` and `index.html`
-
-## See also
-
-Interactive Gaussian process regression demo
-
-https://github.com/chi-feng/gp-demo
-
-<a href="https://github.com/chi-feng/gp-demo"><img src="https://raw.githubusercontent.com/chi-feng/gp-demo/master/screenshot.png" width="400" /></a>
-
-## Star History
-
-<a href="https://star-history.com/#chi-feng/mcmc-demo&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=chi-feng/mcmc-demo&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=chi-feng/mcmc-demo&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=chi-feng/mcmc-demo&type=Date" />
-  </picture>
-</a>
-
+## Notes
+- No build step; all libraries are vendored in `lib/` (fonts load from Google
+  Fonts when online; the pages remain functional offline).
+- Every sampler runs the real, tested implementation from `algorithms/` —
+  there are no placeholder fall-backs.
+- Redesigned in the Broadsheet system; based on the original demo by Chi Feng:
+  https://github.com/chi-feng/mcmc-demo
