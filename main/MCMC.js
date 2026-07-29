@@ -159,6 +159,105 @@ MCMC.targets["funnel"] = {
   },
 };
 
+// "Flower" target from Sejdinovic et al., "Kernel Adaptive Metropolis-
+// Hastings" (ICML 2014), Appendix B: the F(r0, A, omega, sigma) family
+//   F(x) = exp( -( ||x|| - r0 - A cos(omega * atan2(x2, x1)) )^2 / (2 sigma^2) )
+// i.e. a ring of radius r0 with a periodic petal perturbation. Parameters are
+// rescaled from the paper's to fit the [-6, 6] display.
+MCMC.targetNames.push("flower");
+MCMC.targets["flower"] = {
+  xmin: -6,
+  xmax: 6,
+  r0: 3,
+  A: 1.6,
+  omega: 6,
+  sigma2: 0.0625, // sigma = 0.25
+  logDensity: (x) => {
+    const t = MCMC.targets.flower;
+    const r = x.norm();
+    const f = r - t.r0 - t.A * Math.cos(t.omega * Math.atan2(x[1], x[0]));
+    return -(f * f) / (2 * t.sigma2);
+  },
+  gradLogDensity: (x) => {
+    const t = MCMC.targets.flower;
+    const r = x.norm();
+    if (r < 1e-9) return zeros(2, 1);
+    const theta = Math.atan2(x[1], x[0]);
+    const f = r - t.r0 - t.A * Math.cos(t.omega * theta);
+    // d(theta)/dx = -y/r^2, d(theta)/dy = x/r^2
+    const w = (t.A * t.omega * Math.sin(t.omega * theta)) / (r * r);
+    return matrix([
+      [(-f / t.sigma2) * (x[0] / r - w * x[1])],
+      [(-f / t.sigma2) * (x[1] / r + w * x[0])],
+    ]);
+  },
+};
+
+// Swiss-roll target: a Gaussian tube of constant width sigma around the
+// Archimedean spiral r = s*theta. For a point at polar (r, phi) the nearest
+// arm lies at radial distance d = s * wrap(r/s - phi), where wrap maps to
+// (-pi, pi] (choosing the closest of the spiral's turns), so
+//   log p = -d^2 / (2 sigma^2) - r^2 / (2 tau^2).
+// The Gaussian envelope N(0, tau^2 I) keeps the target proper — a constant-
+// width tube along an infinite spiral is not integrable (chains would drift
+// outward along the arm forever); it plays the same role as the
+// N(x_{3:d}; 0, I) factor in the flower target.
+MCMC.targetNames.push("swissroll");
+MCMC.targets["swissroll"] = {
+  xmin: -6,
+  xmax: 6,
+  s: 0.32, // spiral growth rate: arms are 2*pi*s ~ 2.0 apart
+  sigma2: 0.0625, // sigma = 0.25 (tube thickness)
+  tau2: 9, // tau = 3 (radial envelope keeping the target proper)
+  wrap: (a) => {
+    // map angle difference to (-pi, pi]
+    a = a % (2 * Math.PI);
+    if (a > Math.PI) a -= 2 * Math.PI;
+    if (a <= -Math.PI) a += 2 * Math.PI;
+    return a;
+  },
+  logDensity: (x) => {
+    const t = MCMC.targets.swissroll;
+    const r = x.norm();
+    const d = t.s * t.wrap(r / t.s - Math.atan2(x[1], x[0]));
+    return -(d * d) / (2 * t.sigma2) - (r * r) / (2 * t.tau2);
+  },
+  gradLogDensity: (x) => {
+    const t = MCMC.targets.swissroll;
+    const r = x.norm();
+    if (r < 1e-9) return zeros(2, 1);
+    const delta = t.wrap(r / t.s - Math.atan2(x[1], x[0]));
+    // d(delta)/dx = x/(s r) + y/r^2 ; d(delta)/dy = y/(s r) - x/r^2
+    const k = (-t.s * t.s * delta) / t.sigma2;
+    return matrix([
+      [k * (x[0] / (t.s * r) + x[1] / (r * r)) - x[0] / t.tau2],
+      [k * (x[1] / (t.s * r) - x[0] / (r * r)) - x[1] / t.tau2],
+    ]);
+  },
+};
+
+// Strongly correlated Gaussian ("ridge", correlation 0.95): the classic
+// adaptive-MCMC test case — isotropic random-walk proposals crawl along the
+// narrow diagonal while preconditioned/adaptive samplers glide.
+const ridgeDist = new MultivariateNormal(
+  zeros(2, 1),
+  matrix([
+    [4, 3.8],
+    [3.8, 4],
+  ])
+);
+MCMC.targetNames.push("ridge");
+MCMC.targets["ridge"] = {
+  xmin: -6,
+  xmax: 6,
+  logDensity: (x) => {
+    return ridgeDist.logDensity(x);
+  },
+  gradLogDensity: (x) => {
+    return ridgeDist.gradLogDensity(x);
+  },
+};
+
 // Squiggle distribution
 const squiggleDist = new MultivariateNormal(
   matrix([[0], [0]]),

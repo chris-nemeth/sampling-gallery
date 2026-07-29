@@ -11,8 +11,9 @@ buildless HTML: open it in a browser, or serve the folder.
   animated thumbnails and plain-language descriptions. Links into the sampler.
 - `sampler.html` — the interactive app, driven by the project's real MCMC
   engine (`lib/`, `main/`, `algorithms/`): every one of the 20 samplers in the
-  rail runs its genuine algorithm. Six target distributions (banana / donut /
-  Gaussian / mixture / funnel / squiggle), per-sampler tunable parameters,
+  rail runs its genuine algorithm. Nine target distributions (banana / donut /
+  Gaussian / mixture / funnel / squiggle / flower / swiss roll / correlated
+  ridge), per-sampler tunable parameters,
   live diagnostics (steps / acceptance / mean / ESS), a 2D view with proposal
   arrows, gradients and trajectories rendered live, and a rotating 3D
   density-surface view with the chain and step geometry lifted onto it.
