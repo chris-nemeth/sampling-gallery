@@ -1,6 +1,6 @@
-# MCMC Visualisations
+# MCMC-Viz
 
-**Live demo: https://chris-nemeth.github.io/MCMC-Visualisations/**
+**Live demo: https://chris-nemeth.github.io/mcmc-viz/**
 
 An interactive gallery of Markov-chain Monte Carlo (and related) sampling
 algorithms — animated, tunable, and explained in plain language. Static,
