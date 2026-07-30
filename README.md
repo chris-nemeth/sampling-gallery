@@ -24,6 +24,7 @@ buildless HTML: open it in a browser, or serve the folder.
 
 ## Samplers
 Rejection sampling, importance sampling (with SIR and PSIS), quasi-Monte Carlo, slice sampling,
+elliptical slice sampling,
 Random Walk MH, Adaptive MH, HMC (optional dual-averaging step-size
 adaptation), NUTS (efficient dual-averaged by default; naive tree and fixed
 step size as advanced options), MALA, ULA, SGLD (optional control variates),

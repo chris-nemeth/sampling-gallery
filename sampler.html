@@ -170,6 +170,7 @@
   <script src="algorithms/ImportanceSampling.js"></script>
   <script src="algorithms/QuasiMonteCarlo.js"></script>
   <script src="algorithms/SliceSampling.js"></script>
+  <script src="algorithms/EllipticalSlice.js"></script>
   <script src="algorithms/ParallelTempering.js"></script>
   <script src="algorithms/TemperedSMC.js"></script>
   <script src="algorithms/AdaptiveMH.js"></script>
@@ -202,6 +203,7 @@
       { group: "MCMC", id: "NUTS", label: "NUTS", name: "No-U-Turn Sampler", desc: "Hamiltonian dynamics that recursively double the trajectory and stop when the path doubles back, with self-tuned step size — the configuration used by Stan. Tree implementation and adaptation are advanced options." },
       { group: "MCMC", id: "MALA", label: "MALA", name: "Metropolis-adjusted Langevin", desc: "Nudges each proposal uphill along the gradient, then applies a Metropolis correction to stay exact." },
       { group: "MCMC", id: "SliceSampling", label: "Slice", name: "Slice Sampling", desc: "Draws a height under the density curve, then samples uniformly from the horizontal slice at that height, adapting its step size automatically." },
+      { group: "MCMC", id: "EllipticalSlice", label: "Ell. Slice", name: "Elliptical Slice Sampling", desc: "Slice-samples the angle around an ellipse through the current state and a Gaussian draw — rejection-free, with no step size to tune. The target is split as Gaussian prior × residual likelihood." },
       { group: "MCMC", id: "GibbsSampling", label: "Gibbs", name: "Gibbs Sampling", desc: "Updates one coordinate at a time from its full conditional, sweeping through the dimensions." },
       { group: "MCMC", id: "H2MC", label: "H2MC", name: "Hessian–Hamiltonian Monte Carlo", desc: "Uses local curvature to shape long anisotropic Gaussian proposals, following approximate Hamiltonian flow." },
       { group: "MCMC", id: "ULA", label: "ULA", name: "Unadjusted Langevin Algorithm", desc: "Follows the gradient with injected noise and never rejects — fast, but slightly biased near the target." },
