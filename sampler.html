@@ -172,7 +172,10 @@
   <script src="algorithms/SliceSampling.js"></script>
   <script src="algorithms/EllipticalSlice.js"></script>
   <script src="algorithms/AAPS.js"></script>
+  <script src="algorithms/ParVI-common.js"></script>
   <script src="algorithms/CoinSVGD.js"></script>
+  <script src="algorithms/WassersteinParticleDescent.js"></script>
+  <script src="algorithms/SPOS.js"></script>
   <script src="algorithms/RiemannianHMC.js"></script>
   <script src="algorithms/ParallelTempering.js"></script>
   <script src="algorithms/TemperedSMC.js"></script>
@@ -222,6 +225,8 @@
       { group: "Non-reversible", id: "BouncyParticle", label: "BPS", name: "Bouncy Particle Sampler", desc: "A non-reversible particle that travels in straight lines and reflects off the gradient at random bounce times, with velocity refreshment." },
       { group: "Particle methods", id: "SVGD", label: "SVGD", name: "Stein Variational Gradient Descent", desc: "A cloud of particles moves together, pushed toward the density and apart from one another." },
       { group: "Particle methods", id: "CoinSVGD", label: "Coin SVGD", name: "Coin Stein Variational Gradient Descent", desc: "SVGD without a learning rate: each particle coordinate is a coin-betting gambler whose step size emerges from its own drift history. Same kernel and drift as SVGD — only the optimizer differs." },
+      { group: "Particle methods", id: "WassersteinParticleDescent", label: "WPD", name: "Wasserstein Particle Descent", desc: "Particle discretizations of the Wasserstein gradient flow of KL: raw target attraction plus a kernel-density entropy force. Switch between the Blob, GFSD and GFSF constructions and compare their KSD." },
+      { group: "Particle methods", id: "SPOS", label: "SPOS", name: "Stochastic Particle-Optimization Sampling", desc: "SVGD transport plus Langevin noise — a bridge between deterministic particle flow (τ = 0) and stochastic exploration. The noise counters deterministic particle collapse." },
     ];
     // old deep links keep working: variants folded into unified samplers
     const LEGACY_IDS = {

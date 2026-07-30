@@ -802,20 +802,28 @@ class Visualizer {
           lw: 0,
         });
       }
-      // draw svgd particles and gradient vectors
-      for (var i = 0; i < event.x.length; i++) {
-        var norm = event.gradx[i].norm();
-        if (!(norm > 1e-12)) continue; // zero drift: no arrow (and no NaN)
-        var scale = 0.25 / norm;
-        var to = event.x[i].add(event.gradx[i].scale(scale));
-        var alpha = Math.min(10 * norm, 1).toFixed(2);
-        color = "rgba(0,0,0," + alpha + ")";
-        this.drawArrow(this.overlayCanvas, {
-          from: event.x[i],
-          to: to,
-          color: color,
-          lw: 1,
-        });
+      // draw velocity arrows: either the total velocity (default) or one or
+      // more decomposed force sets supplied as event.forces = [{gradx, rgb}]
+      var self_ = this;
+      var drawArrows = function (gradx, rgb) {
+        for (var i = 0; i < event.x.length; i++) {
+          var norm = gradx[i].norm();
+          if (!(norm > 1e-12)) continue; // zero drift: no arrow (and no NaN)
+          var scale = 0.25 / norm;
+          var to = event.x[i].add(gradx[i].scale(scale));
+          var alpha = Math.min(10 * norm, 1).toFixed(2);
+          self_.drawArrow(self_.overlayCanvas, {
+            from: event.x[i],
+            to: to,
+            color: "rgba(" + rgb + "," + alpha + ")",
+            lw: 1,
+          });
+        }
+      };
+      if (event.forces && event.forces.length) {
+        for (var f = 0; f < event.forces.length; f++) drawArrows(event.forces[f].gradx, event.forces[f].rgb);
+      } else {
+        drawArrows(event.gradx, "0,0,0");
       }
       this.drawHistograms();
     }

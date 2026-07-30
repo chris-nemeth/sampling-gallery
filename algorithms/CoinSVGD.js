@@ -23,6 +23,8 @@ MCMC.registerAlgorithm("CoinSVGD", {
     self.n = 200; // number of particles
     self.h = 0.15; // kernel bandwidth
     self.use_median = true;
+    self.particleInit = ParVI.initNames[0];
+    self.showForces = "total";
     self.reset(self);
   },
 
@@ -30,7 +32,7 @@ MCMC.registerAlgorithm("CoinSVGD", {
     var L = Float64Array.zeros(self.dim, 1);
     for (var k = 0; k < self.dim; k++) L[k] = 1e-10; // max |drift| per coordinate
     return {
-      x0: MultivariateNormal.getSample(self.dim), // betting anchor
+      x0: ParVI.initCloud(self.particleInit, self.dim), // betting anchor
       L: L,
       gradSum: Float64Array.zeros(self.dim, 1),
       absGradSum: Float64Array.zeros(self.dim, 1),
@@ -55,6 +57,15 @@ MCMC.registerAlgorithm("CoinSVGD", {
   },
 
   attachUI: function (self, folder) {
+    folder
+      .add(self, "particleInit", ParVI.initNames)
+      .name("Initialization")
+      .onChange(function () {
+        sim.reset();
+      });
+    folder
+      .add(self, "showForces", ["total", "attraction", "repulsion", "both"])
+      .name("Show forces");
     folder.add(self, "use_median").name("Median heuristic").listen();
     folder
       .add(self, "h", 0.05, 2)
@@ -110,15 +121,24 @@ MCMC.registerAlgorithm("CoinSVGD", {
     }
 
     // SVGD drift phi(x_i) = (1/n) sum_j [ k(x_j, x_i) grad log p(x_j) + grad_{x_j} k ]
+    // with the attraction / repulsion terms kept separate for display
+    var attract = new Array(n),
+      repel = new Array(n);
     for (var i = 0; i < n; i++) {
+      attract[i] = Float64Array.zeros(self.dim, 1);
+      repel[i] = Float64Array.zeros(self.dim, 1);
       for (var j = 0; j < n; j++) {
         var rbf = Math.exp(-dist2[i * n + j] / self.h);
         for (var k = 0; k < self.dim; k++) {
-          var grad_rbf = ((self.chain[i][k] - self.chain[j][k]) * 2 * rbf) / self.h;
-          self.gradx[i][k] += self.gradLogDensities[j][k] * rbf + grad_rbf;
+          attract[i][k] += self.gradLogDensities[j][k] * rbf;
+          repel[i][k] += ((self.chain[i][k] - self.chain[j][k]) * 2 * rbf) / self.h;
         }
       }
-      for (var k = 0; k < self.dim; k++) self.gradx[i][k] /= n;
+      for (var k = 0; k < self.dim; k++) {
+        attract[i][k] /= n;
+        repel[i][k] /= n;
+        self.gradx[i][k] = attract[i][k] + repel[i][k];
+      }
     }
 
     // coin-betting update: position is set from the betting state, and the
@@ -146,11 +166,25 @@ MCMC.registerAlgorithm("CoinSVGD", {
       xSnap[i] = self.chain[i].copy();
       gSnap[i] = self.gradx[i].copy();
     }
+    var forces = null;
+    if (self.showForces === "attraction") forces = [{ gradx: attract, rgb: "0,114,178" }];
+    else if (self.showForces === "repulsion") forces = [{ gradx: repel, rgb: "213,94,0" }];
+    else if (self.showForces === "both")
+      forces = [
+        { gradx: attract, rgb: "0,114,178" },
+        { gradx: repel, rgb: "213,94,0" },
+      ];
     visualizer.queue.push({
       type: "svgd-step",
       x: xSnap,
       gradx: gSnap,
+      forces: forces,
       h: self.h,
+    });
+    visualizer.queue.push({
+      type: "overlay",
+      clear: false,
+      metrics: [{ k: "KSD", v: ParVI.ksd(xSnap, self.gradLogDensities, self.h, self.dim).toFixed(3) }],
     });
 
     for (var i = 0; i < n; i++) self.chain[i].increment(self.gradx[i]);

@@ -33,7 +33,10 @@ MALA, ULA, SGLD (optional control variates),
 tuning-free ULA (FUSE), H2MC, Gibbs, ensemble MCMC (stretch and differential-evolution
 moves), parallel tempering, tempered SMC (with an annealed importance
 sampling mode), Zig-Zag, Bouncy Particle
-Sampler, SVGD, Coin SVGD (learning-rate free), and nested sampling.
+Sampler, SVGD, Coin SVGD (learning-rate free), Wasserstein particle descent
+(Blob, GFSD and GFSF modes), SPOS, and nested sampling. The particle methods
+share a live kernel Stein discrepancy diagnostic, an attraction/repulsion
+force decomposition, and selectable particle initializations.
 
 ## Run locally
 Open `index.html` in any modern browser, or from the folder root:

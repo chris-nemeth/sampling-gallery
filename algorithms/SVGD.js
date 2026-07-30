@@ -16,19 +16,20 @@ MCMC.registerAlgorithm("SVGD", {
     self.use_adagrad = true;
     self.alpha = 0.9;
     self.fudge_factor = 1e-2;
+    self.particleInit = ParVI.initNames[0];
+    self.showForces = "total";
     self.iter = 0;
     self.reset(self);
   },
 
   reset: function (self) {
-    // initialize chain with samples from standard normal
     self.chain = [];
     self.gradx = [];
     self.historical_grad = [];
     self.gradLogDensities = [];
     self.iter = 0;
     for (let i = 0; i < self.n; i++) {
-      self.chain.push(MultivariateNormal.getSample(self.dim));
+      self.chain.push(ParVI.initCloud(self.particleInit, self.dim));
       self.gradx.push(Float64Array.zeros(self.dim, 1));
       self.historical_grad.push(Float64Array.zeros(self.dim, 1));
       self.gradLogDensities.push(0);
@@ -36,6 +37,15 @@ MCMC.registerAlgorithm("SVGD", {
   },
 
   attachUI: function (self, folder) {
+    folder
+      .add(self, "particleInit", ParVI.initNames)
+      .name("Initialization")
+      .onChange(function () {
+        sim.reset();
+      });
+    folder
+      .add(self, "showForces", ["total", "attraction", "repulsion", "both"])
+      .name("Show forces");
     folder.add(self, "use_median").name("Median heuristic").listen();
     folder
       .add(self, "h", 0.05, 2)
@@ -57,7 +67,7 @@ MCMC.registerAlgorithm("SVGD", {
     // resize samples appropriately
     if (self.n > self.chain.length) {
       for (let i = 0; i < self.n - self.chain.length; i++) {
-        self.chain.push(MultivariateNormal.getSample(self.dim));
+        self.chain.push(ParVI.initCloud(self.particleInit, self.dim));
         self.gradx.push(Float64Array.zeros(self.dim, 1));
         self.historical_grad.push(Float64Array.zeros(self.dim, 1));
         self.gradLogDensities.push(0);
@@ -97,17 +107,24 @@ MCMC.registerAlgorithm("SVGD", {
       self.h = median / Math.log(n);
     }
 
-    // compute gradient
+    // compute gradient, keeping the two forces separate for display:
+    // attraction (kernel-weighted target score) and repulsion (kernel grad)
+    var attract = new Array(n),
+      repel = new Array(n);
     for (let i = 0; i < n; i++) {
+      attract[i] = Float64Array.zeros(self.dim, 1);
+      repel[i] = Float64Array.zeros(self.dim, 1);
       for (let j = 0; j < n; j++) {
         var rbf = Math.exp(-dist2[i * n + j] / self.h);
         for (let k = 0; k < self.dim; k++) {
-          var grad_rbf = ((self.chain[i][k] - self.chain[j][k]) * 2 * rbf) / self.h;
-          self.gradx[i][k] += self.gradLogDensities[j][k] * rbf + grad_rbf;
+          attract[i][k] += self.gradLogDensities[j][k] * rbf;
+          repel[i][k] += ((self.chain[i][k] - self.chain[j][k]) * 2 * rbf) / self.h;
         }
       }
       for (let k = 0; k < self.dim; k++) {
-        self.gradx[i][k] /= n;
+        attract[i][k] /= n;
+        repel[i][k] /= n;
+        self.gradx[i][k] = attract[i][k] + repel[i][k];
       }
     }
 
@@ -136,11 +153,25 @@ MCMC.registerAlgorithm("SVGD", {
       xSnap[i] = self.chain[i].copy();
       gSnap[i] = self.gradx[i].copy();
     }
+    var forces = null;
+    if (self.showForces === "attraction") forces = [{ gradx: attract, rgb: "0,114,178" }];
+    else if (self.showForces === "repulsion") forces = [{ gradx: repel, rgb: "213,94,0" }];
+    else if (self.showForces === "both")
+      forces = [
+        { gradx: attract, rgb: "0,114,178" },
+        { gradx: repel, rgb: "213,94,0" },
+      ];
     visualizer.queue.push({
       type: "svgd-step",
       x: xSnap,
       gradx: gSnap,
+      forces: forces,
       h: self.h,
+    });
+    visualizer.queue.push({
+      type: "overlay",
+      clear: false,
+      metrics: [{ k: "KSD", v: ParVI.ksd(xSnap, self.gradLogDensities, self.h, self.dim).toFixed(3) }],
     });
 
     // update particles
