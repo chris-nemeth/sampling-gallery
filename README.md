@@ -27,7 +27,8 @@ Rejection sampling, importance sampling (with SIR and PSIS), quasi-Monte Carlo, 
 elliptical slice sampling,
 Random Walk MH, Adaptive MH, HMC (optional dual-averaging step-size
 adaptation), NUTS (efficient dual-averaged by default; naive tree and fixed
-step size as advanced options), the apogee-to-apogee path sampler (AAPS),
+step size as advanced options), Riemannian-manifold HMC (SoftAbs metric),
+the apogee-to-apogee path sampler (AAPS),
 MALA, ULA, SGLD (optional control variates),
 tuning-free ULA (FUSE), H2MC, Gibbs, ensemble MCMC (stretch and differential-evolution
 moves), parallel tempering, tempered SMC (with an annealed importance

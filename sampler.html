@@ -173,6 +173,7 @@
   <script src="algorithms/EllipticalSlice.js"></script>
   <script src="algorithms/AAPS.js"></script>
   <script src="algorithms/CoinSVGD.js"></script>
+  <script src="algorithms/RiemannianHMC.js"></script>
   <script src="algorithms/ParallelTempering.js"></script>
   <script src="algorithms/TemperedSMC.js"></script>
   <script src="algorithms/AdaptiveMH.js"></script>
@@ -203,6 +204,7 @@
       { group: "MCMC", id: "AdaptiveMH", label: "Adaptive MH", name: "Adaptive Metropolis", desc: "Random-walk Metropolis that learns its proposal covariance on the fly from the chain's own history." },
       { group: "MCMC", id: "HamiltonianMC", label: "HMC", name: "Hamiltonian Monte Carlo", desc: "Simulates a frictionless particle rolling across the negative log-density, using gradients for long, informed leaps. Optionally tunes its own step size by dual averaging." },
       { group: "MCMC", id: "NUTS", label: "NUTS", name: "No-U-Turn Sampler", desc: "Hamiltonian dynamics that recursively double the trajectory and stop when the path doubles back, with self-tuned step size — the configuration used by Stan. Tree implementation and adaptation are advanced options." },
+      { group: "MCMC", id: "RiemannianHMC", label: "RMHMC", name: "Riemannian-Manifold HMC", desc: "HMC on a position-dependent metric (SoftAbs of the local Hessian): the ellipses show the sampler's notion of distance deforming with the target's curvature. Watch it traverse the funnel's neck where fixed-metric HMC stalls." },
       { group: "MCMC", id: "AAPS", label: "AAPS", name: "Apogee-to-Apogee Path Sampler", desc: "A simpler, tuning-robust alternative to NUTS: the leapfrog path is cut into segments at its apogees, the current point sits in a random window of K+1 segments, and a proposal is drawn from the whole path weighted by distance and density." },
       { group: "MCMC", id: "MALA", label: "MALA", name: "Metropolis-adjusted Langevin", desc: "Nudges each proposal uphill along the gradient, then applies a Metropolis correction to stay exact." },
       { group: "MCMC", id: "SliceSampling", label: "Slice", name: "Slice Sampling", desc: "Draws a height under the density curve, then samples uniformly from the horizontal slice at that height, adapting its step size automatically." },
