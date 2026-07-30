@@ -723,6 +723,54 @@ class Visualizer {
       }
     }
 
+    // generic overlay: lets algorithms draw arbitrary step geometry without
+    // touching the Visualizer — used by slice sampling (bracket + shrinkage),
+    // rejection/importance sampling (envelope, weighted clouds), parallel
+    // tempering (hot chains + swap arcs) and SMC (weighted particle cloud).
+    //   { type: "overlay", clear?, ellipses?: [{center, cov}],
+    //     segments?: [{from, to, color?, lw?, alpha?, arrow?}],
+    //     points?:   [{center, radius?, fill?, color?, lw?, alpha?}],
+    //     labels?:   ["line 1", ...], histograms?: bool }
+    if (event.type == "overlay") {
+      var context = this.overlayCanvas.getContext("2d");
+      if (event.clear !== false) context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      if (event.ellipses)
+        for (var i = 0; i < event.ellipses.length; ++i)
+          this.drawProposalContour(this.overlayCanvas, event.ellipses[i].center, event.ellipses[i].cov);
+      if (event.segments)
+        for (var i = 0; i < event.segments.length; ++i) {
+          var s = event.segments[i];
+          var opts = { color: s.color || this.proposalColor, lw: s.lw || 1, alpha: s.alpha };
+          if (s.arrow) this.drawArrow(this.overlayCanvas, { from: s.from, to: s.to, color: opts.color, lw: opts.lw, alpha: opts.alpha });
+          else this.drawPath(this.overlayCanvas, { path: [s.from, s.to], color: opts.color, lw: opts.lw, alpha: opts.alpha });
+        }
+      if (event.points)
+        for (var i = 0; i < event.points.length; ++i) {
+          var pt = event.points[i];
+          this.drawCircle(this.overlayCanvas, {
+            center: pt.center,
+            radius: pt.radius || 0.03,
+            fill: pt.fill,
+            color: pt.color,
+            lw: pt.lw != null ? pt.lw : 0,
+            alpha: pt.alpha,
+          });
+        }
+      if (event.labels) {
+        // start a dozen lines down so the readout clears the header overlay
+        // that sampler.html places over the canvas's top-left corner
+        context.globalAlpha = 1;
+        context.fillStyle = "#000";
+        for (var i = 0; i < event.labels.length; ++i)
+          context.fillText(
+            event.labels[i],
+            5 * window.devicePixelRatio,
+            5 * window.devicePixelRatio + (i + 13) * 1.2 * this.fontSizePx
+          );
+      }
+      if (event.histograms) this.drawHistograms();
+    }
+
     if (event.type == "svgd-step") {
       // clear overlay canvas
       var context = this.overlayCanvas.getContext("2d");

@@ -1,6 +1,6 @@
-# MCMC-Viz
+# sampling-viz
 
-**Live demo: https://chris-nemeth.github.io/mcmc-viz/**
+**Live demo: https://chris-nemeth.github.io/sampling-viz/**
 
 An interactive gallery of Markov-chain Monte Carlo (and related) sampling
 algorithms — animated, tunable, and explained in plain language. Static,
@@ -23,10 +23,12 @@ buildless HTML: open it in a browser, or serve the folder.
 - `docs/*.gif` — animation thumbnails used by the landing page.
 
 ## Samplers
+Rejection sampling, importance sampling (with SIR), slice sampling,
 Random Walk MH, Adaptive MH, HMC (optional dual-averaging step-size
 adaptation), NUTS (efficient dual-averaged by default; naive tree and fixed
 step size as advanced options), MALA, ULA, SGLD (optional control variates),
-tuning-free ULA (FUSE), H2MC, Gibbs, DE-MCMC-Z, Zig-Zag, Bouncy Particle
+tuning-free ULA (FUSE), H2MC, Gibbs, DE-MCMC-Z, parallel tempering,
+tempered SMC, Zig-Zag, Bouncy Particle
 Sampler, SVGD, and Nested Sampling (RadFriends).
 
 ## Run locally
