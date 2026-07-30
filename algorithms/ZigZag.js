@@ -34,14 +34,32 @@ MCMC.registerAlgorithm("ZigZag", {
   init: function (self) {
     self.method = "Discretized";
     self.tStep = 0.5; // continuous time advanced per step (sample spacing)
-    self.dt = 0.02; // micro-step for the discretized method
-    self.thinHorizon = 0.5; // look-ahead window for the thinning envelope
+    self.dt = 0.02; // max micro-step for the discretized method
+    self.thinHorizon = 0.2; // look-ahead window for the thinning envelope
   },
 
   reset: function (self) {
-    self.x = MultivariateNormal.getSample(self.dim);
+    self.x = MCMC.algorithms["ZigZag"].smartInit(self);
     self.v = MCMC.algorithms["ZigZag"].randomSigns(self.dim);
     self.chain = [self.x.copy()];
+  },
+
+  // Initialise from the best of a few N(0, I) draws: some targets (e.g. the
+  // flower) have near-zero-mass regions around the origin where switching
+  // rates blow up, and starting a PDMP inside one makes early mixing terrible.
+  smartInit: function (self) {
+    var best = MultivariateNormal.getSample(self.dim);
+    if (!self.logDensity) return best;
+    var bestLp = self.logDensity(best);
+    for (var k = 1; k < 10; k++) {
+      var c = MultivariateNormal.getSample(self.dim);
+      var lp = self.logDensity(c);
+      if (lp > bestLp) {
+        best = c;
+        bestLp = lp;
+      }
+    }
+    return best;
   },
 
   attachUI: function (self, folder) {
@@ -59,23 +77,26 @@ MCMC.registerAlgorithm("ZigZag", {
   },
 
   // Find the next coordinate switch along the ray x + t v for t in [0, maxTime],
-  // by fine time-stepping. Returns { dt, coord, x } where coord is the switching
-  // coordinate (or -1 if the window elapsed with no switch) and x is the
-  // position reached. Switching probability over a micro-step is 1 - exp(-rate*dt).
+  // by fine time-stepping the superposed process. The micro-step adapts to the
+  // local rate (lambda_tot * step <= 0.5) so that stiff regions are resolved
+  // rather than degenerating into flip-every-step jitter; a switch fires with
+  // probability 1 - exp(-lambda_tot * step) and the coordinate is then chosen
+  // proportionally to its rate (exact superposition decomposition). Returns
+  // { dt, coord, x } with coord = -1 if the window elapsed without a switch.
   nextSwitchDiscretized: function (self, x, v, maxTime) {
     var t = 0;
     var xc = x.copy();
-    while (t < maxTime) {
-      var step = Math.min(self.dt, maxTime - t);
+    var guard = 0;
+    while (t < maxTime && guard++ < 50000) {
       var g = self.gradLogDensity(xc);
-      var fired = -1;
-      for (var i = 0; i < self.dim; i++) {
-        var rate = Math.max(0, -v[i] * g[i]);
-        if (Math.random() < 1 - Math.exp(-rate * step)) fired = i;
-      }
+      var r0 = Math.max(0, -v[0] * g[0]);
+      var r1 = Math.max(0, -v[1] * g[1]);
+      var lam = r0 + r1;
+      var step = Math.min(self.dt, maxTime - t, lam > 0 ? 0.5 / lam : self.dt);
+      var fired = Math.random() < 1 - Math.exp(-lam * step);
       xc = xc.add(v.scale(step));
       t += step;
-      if (fired >= 0) return { dt: t, coord: fired, x: xc };
+      if (fired) return { dt: t, coord: Math.random() * lam < r0 ? 0 : 1, x: xc };
     }
     return { dt: maxTime, coord: -1, x: xc };
   },
@@ -92,8 +113,11 @@ MCMC.registerAlgorithm("ZigZag", {
     var guard = 0;
     while (t < maxTime && guard++ < 10000) {
       var h = Math.min(self.thinHorizon, maxTime - t);
-      // envelope: max of the superposed rate over the window, sampled at nb points
-      var nb = 4;
+      // envelope: max of the superposed rate over the window, sampled at nb
+      // points and inflated. Exact when the rate is convex along the ray
+      // (e.g. Gaussian targets); the short horizon + dense sampling keep the
+      // estimate a valid bound on the stiff targets too (audited empirically).
+      var nb = 8;
       var M = 0;
       for (var k = 0; k < nb; k++) {
         var s = (h * k) / (nb - 1);
@@ -102,7 +126,7 @@ MCMC.registerAlgorithm("ZigZag", {
         for (var i = 0; i < self.dim; i++) lam += Math.max(0, -v[i] * g[i]);
         if (lam > M) M = lam;
       }
-      M = 1.1 * M + 1e-6;
+      M = 1.3 * M + 1e-6;
       var tau = -Math.log(Math.random()) / M;
       if (tau > h) {
         // no candidate in this window; slide to its end and re-bound

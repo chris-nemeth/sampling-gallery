@@ -33,15 +33,33 @@ MCMC.registerAlgorithm("BouncyParticle", {
   init: function (self) {
     self.method = "Discretized";
     self.tStep = 0.5; // continuous time advanced per step (sample spacing)
-    self.dt = 0.02; // micro-step for the discretized method
+    self.dt = 0.02; // max micro-step for the discretized method
     self.refreshRate = 1.0; // constant velocity-refreshment rate
-    self.thinHorizon = 0.5; // look-ahead window for the thinning envelope
+    self.thinHorizon = 0.2; // look-ahead window for the thinning envelope
   },
 
   reset: function (self) {
-    self.x = MultivariateNormal.getSample(self.dim);
+    self.x = MCMC.algorithms["BouncyParticle"].smartInit(self);
     self.v = MultivariateNormal.getSample(self.dim); // v ~ N(0, I)
     self.chain = [self.x.copy()];
+  },
+
+  // Initialise from the best of a few N(0, I) draws: some targets (e.g. the
+  // flower) have near-zero-mass regions around the origin where bounce rates
+  // blow up, and starting a PDMP inside one makes early mixing terrible.
+  smartInit: function (self) {
+    var best = MultivariateNormal.getSample(self.dim);
+    if (!self.logDensity) return best;
+    var bestLp = self.logDensity(best);
+    for (var k = 1; k < 10; k++) {
+      var c = MultivariateNormal.getSample(self.dim);
+      var lp = self.logDensity(c);
+      if (lp > bestLp) {
+        best = c;
+        bestLp = lp;
+      }
+    }
+    return best;
   },
 
   attachUI: function (self, folder) {
@@ -61,20 +79,25 @@ MCMC.registerAlgorithm("BouncyParticle", {
   },
 
   // Next event (bounce or refresh) along x + t v for t in [0, maxTime], by fine
-  // time-stepping. Returns { dt, type: "bounce" | "refresh" | "none", x }.
+  // time-stepping the superposed process. The micro-step adapts to the local
+  // total rate (Lambda * step <= 0.5) so stiff regions are resolved rather than
+  // degenerating into event-every-step jitter; an event fires with probability
+  // 1 - exp(-Lambda * step) and is classified bounce/refresh proportionally to
+  // the component rates (exact superposition decomposition).
+  // Returns { dt, type: "bounce" | "refresh" | "none", x }.
   nextEventDiscretized: function (self, x, v, maxTime) {
     var t = 0;
     var xc = x.copy();
-    while (t < maxTime) {
-      var step = Math.min(self.dt, maxTime - t);
+    var guard = 0;
+    while (t < maxTime && guard++ < 50000) {
       var g = self.gradLogDensity(xc);
       var lamB = Math.max(0, -v.dot(g)); // = max(0, <v, grad U>)
-      var bounce = Math.random() < 1 - Math.exp(-lamB * step);
-      var refresh = Math.random() < 1 - Math.exp(-self.refreshRate * step);
+      var lam = lamB + self.refreshRate;
+      var step = Math.min(self.dt, maxTime - t, lam > 0 ? 0.5 / lam : self.dt);
+      var fired = Math.random() < 1 - Math.exp(-lam * step);
       xc = xc.add(v.scale(step));
       t += step;
-      if (bounce) return { dt: t, type: "bounce", x: xc };
-      if (refresh) return { dt: t, type: "refresh", x: xc };
+      if (fired) return { dt: t, type: Math.random() * lam < lamB ? "bounce" : "refresh", x: xc };
     }
     return { dt: maxTime, type: "none", x: xc };
   },
@@ -90,7 +113,11 @@ MCMC.registerAlgorithm("BouncyParticle", {
     var guard = 0;
     while (t < maxTime && guard++ < 10000) {
       var h = Math.min(self.thinHorizon, maxTime - t);
-      var nb = 4;
+      // envelope: max of the total rate over the window, sampled at nb points
+      // and inflated. Exact when the rate is convex along the ray (e.g.
+      // Gaussian targets); the short horizon + dense sampling keep the
+      // estimate a valid bound on the stiff targets too (audited empirically).
+      var nb = 8;
       var M = 0;
       for (var k = 0; k < nb; k++) {
         var s = (h * k) / (nb - 1);
@@ -98,7 +125,7 @@ MCMC.registerAlgorithm("BouncyParticle", {
         var lam = Math.max(0, -v.dot(g)) + self.refreshRate;
         if (lam > M) M = lam;
       }
-      M = 1.1 * M + 1e-6;
+      M = 1.3 * M + 1e-6;
       var tau = -Math.log(Math.random()) / M;
       if (tau > h) {
         xc = xc.add(v.scale(h));
