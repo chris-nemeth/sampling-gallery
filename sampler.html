@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MCMC Interactive Gallery</title>
+  <title>The Sampling Gallery</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
     /* ---- Broadsheet chrome around the real engine (Simulation + Visualizer) ---- */
@@ -80,7 +80,7 @@
         <div class="kicker">Interactive Gallery</div>
         <button id="hideRail" type="button">&lsaquo; Hide</button>
       </div>
-      <div class="brand">Markov-chain<br />Monte Carlo</div>
+      <div class="brand">The Sampling<br />Gallery</div>
       <hr class="hr" />
 
       <div class="sec-head"><h4>Sampler</h4><span id="algoCount"></span></div>
@@ -162,17 +162,12 @@
   <script src="algorithms/RandomWalkMH.js"></script>
   <script src="algorithms/AdaptiveMH.js"></script>
   <script src="algorithms/HamiltonianMC.js"></script>
-  <script src="algorithms/DualAveragingHMC.js"></script>
-  <script src="algorithms/NaiveNUTS.js"></script>
-  <script src="algorithms/EfficientNUTS.js"></script>
-  <script src="algorithms/DualAveragingNUTS.js"></script>
+    <script src="algorithms/NUTS.js"></script>
   <script src="algorithms/MALA.js"></script>
   <script src="algorithms/ULA.js"></script>
   <script src="algorithms/SGLD.js"></script>
-  <script src="algorithms/SGLD-CV.js"></script>
   <script src="algorithms/FUSE-ULA.js"></script>
   <script src="algorithms/H2MC.js"></script>
-  <script src="algorithms/MCHMC.js"></script>
   <script src="algorithms/GibbsSampling.js"></script>
   <script src="algorithms/DE-MCMC-Z.js"></script>
   <script src="algorithms/ZigZag.js"></script>
@@ -188,18 +183,13 @@
     const SAMPLERS = [
       { id: "RandomWalkMH", label: "RWMH", name: "Random Walk Metropolis–Hastings", desc: "Proposes a blind Gaussian hop and accepts it with a probability set by the density ratio." },
       { id: "AdaptiveMH", label: "Adaptive MH", name: "Adaptive Metropolis", desc: "Random-walk Metropolis that learns its proposal covariance on the fly from the chain's own history." },
-      { id: "HamiltonianMC", label: "HMC", name: "Hamiltonian Monte Carlo", desc: "Simulates a frictionless particle rolling across the negative log-density, using gradients for long, informed leaps." },
-      { id: "DualAveragingHMC", label: "DA-HMC", name: "HMC with Dual Averaging", desc: "Hamiltonian Monte Carlo that tunes its own step size during warm-up, targeting a chosen acceptance rate." },
-      { id: "NaiveNUTS", label: "NUTS", name: "No-U-Turn Sampler", desc: "Hamiltonian dynamics that recursively double the trajectory and stop when the path begins to double back." },
-      { id: "EfficientNUTS", label: "NUTS (eff.)", name: "Efficient No-U-Turn Sampler", desc: "The memory-efficient NUTS variant: samples along the doubling tree instead of storing every candidate." },
-      { id: "DualAveragingNUTS", label: "DA-NUTS", name: "NUTS with Dual Averaging", desc: "The fully hands-off sampler used by Stan: NUTS path lengths plus dual-averaging step-size adaptation." },
+      { id: "HamiltonianMC", label: "HMC", name: "Hamiltonian Monte Carlo", desc: "Simulates a frictionless particle rolling across the negative log-density, using gradients for long, informed leaps. Optionally tunes its own step size by dual averaging." },
+      { id: "NUTS", label: "NUTS", name: "No-U-Turn Sampler", desc: "Hamiltonian dynamics that recursively double the trajectory and stop when the path doubles back, with self-tuned step size — the configuration used by Stan. Tree implementation and adaptation are advanced options." },
       { id: "MALA", label: "MALA", name: "Metropolis-adjusted Langevin", desc: "Nudges each proposal uphill along the gradient, then applies a Metropolis correction to stay exact." },
       { id: "ULA", label: "ULA", name: "Unadjusted Langevin Algorithm", desc: "Follows the gradient with injected noise and never rejects — fast, but slightly biased near the target." },
-      { id: "SGLD", label: "SGLD", name: "Stochastic Gradient Langevin Dynamics", desc: "Langevin dynamics driven by noisy (mini-batch-style) gradients — the workhorse for large-scale Bayesian learning." },
-      { id: "SGLD-CV", label: "SGLD-CV", name: "SGLD with Control Variates", desc: "SGLD with the gradient estimator anchored at the posterior mode, so the injected noise vanishes near it." },
+      { id: "SGLD", label: "SGLD", name: "Stochastic Gradient Langevin Dynamics", desc: "Langevin dynamics driven by noisy (mini-batch-style) gradients — the workhorse for large-scale Bayesian learning. Toggle control variates to anchor the gradient at the mode so the noise vanishes there." },
       { id: "FUSE-ULA", label: "FUSE-ULA", name: "Tuning-free ULA (FUSE)", desc: "Unadjusted Langevin whose step size adapts itself with a distance-over-gradients schedule — nothing to tune." },
       { id: "H2MC", label: "H2MC", name: "Hessian–Hamiltonian Monte Carlo", desc: "Uses local curvature to shape long anisotropic Gaussian proposals, following approximate Hamiltonian flow." },
-      { id: "MicrocanonicalHamiltonianMC", label: "MCHMC", name: "Microcanonical HMC", desc: "Hamiltonian dynamics at fixed energy with unit-speed momentum — a rejection-free sampler on the energy shell." },
       { id: "GibbsSampling", label: "Gibbs", name: "Gibbs Sampling", desc: "Updates one coordinate at a time from its full conditional, sweeping through the dimensions." },
       { id: "DE-MCMC-Z", label: "DE-MCMC-Z", name: "Differential Evolution Metropolis (Z)", desc: "Builds proposals from scaled differences of past states in an archive — self-tuning across scales." },
       { id: "ZigZag", label: "Zig-Zag", name: "Zig-Zag Sampler", desc: "A non-reversible continuous-time sampler: straight lines with ±1 velocities, switching direction at gradient-driven random events." },
@@ -207,6 +197,15 @@
       { id: "SVGD", label: "SVGD", name: "Stein Variational Gradient Descent", desc: "A cloud of particles moves together, pushed toward the density and apart from one another." },
       { id: "RadFriends-NS", label: "RadFriends-NS", name: "Nested Sampling (RadFriends)", desc: "A population of live points climbs likelihood shells; RadFriends builds a safe region to draw replacements from." },
     ];
+    // old deep links keep working: variants folded into unified samplers
+    const LEGACY_IDS = {
+      NaiveNUTS: "NUTS",
+      EfficientNUTS: "NUTS",
+      DualAveragingNUTS: "NUTS",
+      DualAveragingHMC: "HamiltonianMC",
+      "SGLD-CV": "SGLD",
+      MicrocanonicalHamiltonianMC: "HamiltonianMC",
+    };
     const TARGETS = [
       { id: "banana", label: "Banana" },
       { id: "donut", label: "Donut" },
@@ -613,7 +612,9 @@
 
       // honour ?algorithm=&target= links from the gallery page
       const q = new URLSearchParams(window.location.search);
-      const qa = q.get("algorithm"), qt = q.get("target");
+      let qa = q.get("algorithm");
+      const qt = q.get("target");
+      if (qa && LEGACY_IDS[qa]) qa = LEGACY_IDS[qa];
       const algo = qa && MCMC.algorithms[qa] ? qa : "HamiltonianMC";
       const target = qt && MCMC.targets[qt] ? qt : "banana";
 

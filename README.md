@@ -23,9 +23,10 @@ buildless HTML: open it in a browser, or serve the folder.
 - `docs/*.gif` — animation thumbnails used by the landing page.
 
 ## Samplers
-Random Walk MH, Adaptive MH, HMC, HMC with dual averaging, NUTS (naive,
-efficient, and dual-averaging), MALA, ULA, SGLD, SGLD-CV, tuning-free ULA
-(FUSE), H2MC, Microcanonical HMC, Gibbs, DE-MCMC-Z, Zig-Zag, Bouncy Particle
+Random Walk MH, Adaptive MH, HMC (optional dual-averaging step-size
+adaptation), NUTS (efficient dual-averaged by default; naive tree and fixed
+step size as advanced options), MALA, ULA, SGLD (optional control variates),
+tuning-free ULA (FUSE), H2MC, Gibbs, DE-MCMC-Z, Zig-Zag, Bouncy Particle
 Sampler, SVGD, and Nested Sampling (RadFriends).
 
 ## Run locally
