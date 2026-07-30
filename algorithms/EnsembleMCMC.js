@@ -128,7 +128,7 @@ MCMC.registerAlgorithm("EnsembleMCMC", {
         // the stretch line / DE difference vector anchoring walker 0's proposal
         { from: [walker0.helper[0], walker0.helper[1]], to: [walker0.prop[0], walker0.prop[1]], color: "#999", lw: 1, alpha: 0.7 },
       ],
-      labels: [self.method, "ensemble acceptance " + accRate.toFixed(0) + "%"],
+      metrics: [{ k: "Ensemble acc", v: accRate.toFixed(0) + "%" }],
     });
     visualizer.queue.push({ type: "proposal", proposal: walker0.prop });
     visualizer.queue.push({ type: walker0.acc ? "accept" : "reject", proposal: walker0.prop });

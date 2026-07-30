@@ -92,15 +92,14 @@ MCMC.registerAlgorithm("RejectionSampling", {
       ellipses: [{ center: [0, 0], cov: self.proposalDist.cov }],
       points: points,
       samples: accepted,
+      metrics: [
+        { k: "Accept", v: acceptance.toFixed(acceptance < 0.2 ? 2 : 1) + "%" },
+        { k: "Envelope M", v: Mstr },
+      ],
       labels:
         self.nProposed > 200 && acceptance < 0.2
-          ? [
-              "acceptance " + acceptance.toFixed(2) + "% (M = " + Mstr + ")",
-              "proposal is narrower than the target:",
-              "the envelope M must be enormous, so",
-              "almost every draw is rejected",
-            ]
-          : ["acceptance " + acceptance.toFixed(1) + "% (M = " + Mstr + ")"],
+          ? ["proposal is narrower than the target: the envelope M must be enormous, so almost every draw is rejected"]
+          : null,
       histograms: true,
     });
   },

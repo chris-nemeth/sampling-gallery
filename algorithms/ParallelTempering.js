@@ -129,10 +129,8 @@ MCMC.registerAlgorithm("ParallelTempering", {
       clear: true,
       points: points,
       segments: swapSeg ? [swapSeg] : [],
-      labels: [
-        "swap acceptance " + swapRate.toFixed(0) + "%",
-        "β ladder: " + self.betas.map(function (b) { return b.toFixed(2); }).join(", "),
-      ],
+      metrics: [{ k: "Swap acc", v: swapRate.toFixed(0) + "%" }],
+      labels: ["β ladder: " + self.betas.map(function (b) { return b.toFixed(2); }).join(", ")],
     });
     visualizer.queue.push({ type: "proposal", proposal: coldProposal });
     visualizer.queue.push({

@@ -163,7 +163,7 @@ MCMC.registerAlgorithm("QuasiMonteCarlo", {
       clear: true,
       ellipses: [{ center: [0, 0], cov: self.proposalDist.cov }],
       points: points,
-      labels: [self.sequence, "weighted ESS " + kish.toFixed(0) + " of " + n],
+      metrics: [{ k: "Sequence", v: qmc ? "Halton" : "Random" }],
       histograms: true,
     });
   },

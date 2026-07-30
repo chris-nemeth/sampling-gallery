@@ -255,18 +255,17 @@ MCMC.registerAlgorithm("ImportanceSampling", {
       clear: true,
       ellipses: [{ center: [self.muX, self.muY], cov: self.proposalDist.cov }],
       points: points,
+      metrics: (function () {
+        var m = [{ k: "Max w share", v: maxShare.toFixed(1) + "%" }];
+        if (self.paretoSmooth) m.push({ k: "Pareto k̂", v: isFinite(khat) ? khat.toFixed(2) : "—" });
+        return m;
+      })(),
       labels: (function () {
-        var l = [
-          "weighted ESS " + kish.toFixed(0) + " of " + n + (self.resampleSIR ? " (SIR resampled)" : ""),
-          "max weight share " + maxShare.toFixed(1) + "%",
-        ];
-        if (self.paretoSmooth)
-          l.push(
-            isFinite(khat)
-              ? "Pareto k̂ = " + khat.toFixed(2) + (khat < 0.7 ? " (reliable)" : " (unreliable: k̂ ≥ 0.7)")
-              : "Pareto k̂: too few tail weights"
-          );
-        return l;
+        var l = [];
+        if (self.resampleSIR) l.push("SIR: showing an equally-weighted resample of the weighted history");
+        if (self.paretoSmooth && isFinite(khat) && khat >= 0.7)
+          l.push("k̂ ≥ 0.7: the weight tail is too heavy — PSIS estimates are unreliable");
+        return l.length ? l : null;
       })(),
       histograms: true,
     });

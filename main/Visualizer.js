@@ -733,7 +733,11 @@ class Visualizer {
     //   { type: "overlay", clear?, ellipses?: [{center, cov}],
     //     segments?: [{from, to, color?, lw?, alpha?, arrow?}],
     //     points?:   [{center, radius?, fill?, color?, lw?, alpha?}],
-    //     labels?:   ["line 1", ...], histograms?: bool }
+    //     metrics?:  [{k: "Accept", v: "5.0%"}, ...],  // key/value readouts
+    //     labels?:   ["prose note", ...], histograms?: bool }
+    // metrics/labels are stored on this.overlayMetrics/this.overlayLabels for
+    // host pages with their own stats UI (sampler.html); they are only drawn
+    // onto the canvas when this.drawOverlayLabels !== false (classic.html).
     if (event.type == "overlay") {
       var context = this.overlayCanvas.getContext("2d");
       if (event.clear !== false) context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -764,14 +768,21 @@ class Visualizer {
         // algorithms that never emit accept events (rejection sampling etc.)
         for (var i = 0; i < event.samples.length; ++i) this.drawSample(this.samplesCanvas, event.samples[i]);
       }
-      if (event.labels) {
-        // start a dozen lines down so the readout clears the header overlay
-        // that sampler.html places over the canvas's top-left corner
+      this.overlayMetrics = event.metrics || null;
+      this.overlayLabels = event.labels || null;
+      if (this.drawOverlayLabels !== false && (event.metrics || event.labels)) {
+        // canvas fallback for hosts without their own stats UI; start a dozen
+        // lines down so the readout clears the header overlay that
+        // sampler.html places over the canvas's top-left corner
+        var lines = [];
+        if (event.metrics)
+          for (var i = 0; i < event.metrics.length; ++i) lines.push(event.metrics[i].k + " " + event.metrics[i].v);
+        if (event.labels) lines = lines.concat(event.labels);
         context.globalAlpha = 1;
         context.fillStyle = "#000";
-        for (var i = 0; i < event.labels.length; ++i)
+        for (var i = 0; i < lines.length; ++i)
           context.fillText(
-            event.labels[i],
+            lines[i],
             5 * window.devicePixelRatio,
             5 * window.devicePixelRatio + (i + 13) * 1.2 * this.fontSizePx
           );

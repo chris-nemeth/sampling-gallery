@@ -228,12 +228,17 @@ MCMC.registerAlgorithm("TemperedSMC", {
       type: "overlay",
       clear: true,
       points: points,
-      labels: [
-        (isAIS ? "AIS " : "SMC ") +
-          (self.beta >= 1 ? "β = 1.00 — sampling the target" : "β = " + self.beta.toFixed(2)) +
-          (isAIS && self.beta < 1 ? "  (level " + self.level + "/" + self.levels.length + ")" : ""),
-        "ESS " + kish.toFixed(0) + " / " + N + (self.lastResampled ? " (resampled)" : isAIS ? " (no resampling)" : ""),
-      ],
+      metrics: (function () {
+        var m = [{ k: "Beta", v: self.beta.toFixed(2) }];
+        if (isAIS && self.beta < 1) m.push({ k: "Level", v: self.level + "/" + self.levels.length });
+        return m;
+      })(),
+      labels: (function () {
+        var l = [];
+        if (self.beta >= 1) l.push("β = 1 — sampling the target" + (isAIS ? " (AIS: weights kept, never resampled)" : ""));
+        if (self.lastResampled) l.push("particles resampled this step");
+        return l.length ? l : null;
+      })(),
       histograms: true,
     });
   },
