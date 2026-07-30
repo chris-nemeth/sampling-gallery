@@ -75,6 +75,11 @@
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">No-U-Turn Sampler</span><sup style="font-size:11px;color:var(--color-accent-2)">[2]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">HMC that picks its own path length and step size — the self-tuning sampler behind Stan.</p>
       </a>
+      <a class="entry" href="sampler.html?algorithm=AAPS">
+        <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">AAPS</span></div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Apogee-to-Apogee Path Sampler</span><sup style="font-size:11px;color:var(--color-accent-2)">[23]</sup></div>
+        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Cuts the leapfrog path into segments at its apogees and proposes from a random window of them — a simpler, tuning-robust alternative to NUTS.</p>
+      </a>
       <a class="entry" href="sampler.html?algorithm=MALA">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><img class="en-thumb" src="docs/mala.gif" alt="MALA" style="width:100%;height:100%;object-fit:cover;object-position:center 32%;filter:grayscale(.35) contrast(1.1)"></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Metropolis-adjusted Langevin</span><sup style="font-size:11px;color:var(--color-accent-2)">[3]</sup></div>
@@ -170,6 +175,11 @@
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Stein Variational Gradient</span><sup style="font-size:11px;color:var(--color-accent-2)">[5]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">A cloud of particles moves as one, toward the density and apart from itself.</p>
       </a>
+      <a class="entry" href="sampler.html?algorithm=CoinSVGD">
+        <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">COIN</span></div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Coin SVGD</span><sup style="font-size:11px;color:var(--color-accent-2)">[24]</sup></div>
+        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">SVGD without a learning rate — every particle coordinate is a coin-betting gambler whose step size emerges from its drift history.</p>
+      </a>
     </div>
   </section>
   <section style="padding-top:58px">
@@ -197,6 +207,8 @@
       <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[20] Niederreiter. Random Number Generation and Quasi-Monte Carlo Methods. SIAM (1992).</p>
       <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[21] Vehtari, Simpson, Gelman, Yao &amp; Gabry. Pareto smoothed importance sampling. JMLR (2024).</p>
       <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[22] Murray, Adams &amp; MacKay. Elliptical slice sampling. AISTATS (2010).</p>
+      <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[23] Sherlock, Urbas &amp; Ludkin. The apogee to apogee path sampler. J. Comput. Graph. Statist. (2023).</p>
+      <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[24] Sharrock &amp; Nemeth. Coin sampling: gradient-based Bayesian inference without learning rates. ICML (2023).</p>
     </div>
   </section>
   <footer style="border-top:1px solid var(--color-divider);margin-top:56px;padding-top:16px;display:flex;justify-content:space-between;font-size:12px;color:var(--color-neutral-600)">

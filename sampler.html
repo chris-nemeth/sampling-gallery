@@ -171,6 +171,8 @@
   <script src="algorithms/QuasiMonteCarlo.js"></script>
   <script src="algorithms/SliceSampling.js"></script>
   <script src="algorithms/EllipticalSlice.js"></script>
+  <script src="algorithms/AAPS.js"></script>
+  <script src="algorithms/CoinSVGD.js"></script>
   <script src="algorithms/ParallelTempering.js"></script>
   <script src="algorithms/TemperedSMC.js"></script>
   <script src="algorithms/AdaptiveMH.js"></script>
@@ -201,6 +203,7 @@
       { group: "MCMC", id: "AdaptiveMH", label: "Adaptive MH", name: "Adaptive Metropolis", desc: "Random-walk Metropolis that learns its proposal covariance on the fly from the chain's own history." },
       { group: "MCMC", id: "HamiltonianMC", label: "HMC", name: "Hamiltonian Monte Carlo", desc: "Simulates a frictionless particle rolling across the negative log-density, using gradients for long, informed leaps. Optionally tunes its own step size by dual averaging." },
       { group: "MCMC", id: "NUTS", label: "NUTS", name: "No-U-Turn Sampler", desc: "Hamiltonian dynamics that recursively double the trajectory and stop when the path doubles back, with self-tuned step size — the configuration used by Stan. Tree implementation and adaptation are advanced options." },
+      { group: "MCMC", id: "AAPS", label: "AAPS", name: "Apogee-to-Apogee Path Sampler", desc: "A simpler, tuning-robust alternative to NUTS: the leapfrog path is cut into segments at its apogees, the current point sits in a random window of K+1 segments, and a proposal is drawn from the whole path weighted by distance and density." },
       { group: "MCMC", id: "MALA", label: "MALA", name: "Metropolis-adjusted Langevin", desc: "Nudges each proposal uphill along the gradient, then applies a Metropolis correction to stay exact." },
       { group: "MCMC", id: "SliceSampling", label: "Slice", name: "Slice Sampling", desc: "Draws a height under the density curve, then samples uniformly from the horizontal slice at that height, adapting its step size automatically." },
       { group: "MCMC", id: "EllipticalSlice", label: "Ell. Slice", name: "Elliptical Slice Sampling", desc: "Slice-samples the angle around an ellipse through the current state and a Gaussian draw — rejection-free, with no step size to tune. The target is split as Gaussian prior × residual likelihood." },
@@ -216,6 +219,7 @@
       { group: "Non-reversible", id: "ZigZag", label: "Zig-Zag", name: "Zig-Zag Sampler", desc: "A non-reversible continuous-time sampler: straight lines with ±1 velocities, switching direction at gradient-driven random events." },
       { group: "Non-reversible", id: "BouncyParticle", label: "BPS", name: "Bouncy Particle Sampler", desc: "A non-reversible particle that travels in straight lines and reflects off the gradient at random bounce times, with velocity refreshment." },
       { group: "Particle methods", id: "SVGD", label: "SVGD", name: "Stein Variational Gradient Descent", desc: "A cloud of particles moves together, pushed toward the density and apart from one another." },
+      { group: "Particle methods", id: "CoinSVGD", label: "Coin SVGD", name: "Coin Stein Variational Gradient Descent", desc: "SVGD without a learning rate: each particle coordinate is a coin-betting gambler whose step size emerges from its own drift history. Same kernel and drift as SVGD — only the optimizer differs." },
     ];
     // old deep links keep working: variants folded into unified samplers
     const LEGACY_IDS = {
