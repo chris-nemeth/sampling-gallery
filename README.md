@@ -10,7 +10,7 @@ buildless HTML: open it in a browser, or serve the folder.
 - `index.html` — landing atlas: all algorithms grouped by family, with
   animated thumbnails and plain-language descriptions. Links into the sampler.
 - `sampler.html` — the interactive app, driven by the project's real MCMC
-  engine (`lib/`, `main/`, `algorithms/`): every one of the 20 samplers in the
+  engine (`lib/`, `main/`, `algorithms/`): every sampler in the
   rail runs its genuine algorithm. Nine target distributions (banana / donut /
   Gaussian / mixture / funnel / squiggle / flower / swiss roll / correlated
   ridge), per-sampler tunable parameters,

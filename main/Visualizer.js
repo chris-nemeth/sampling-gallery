@@ -805,6 +805,7 @@ class Visualizer {
       // draw svgd particles and gradient vectors
       for (var i = 0; i < event.x.length; i++) {
         var norm = event.gradx[i].norm();
+        if (!(norm > 1e-12)) continue; // zero drift: no arrow (and no NaN)
         var scale = 0.25 / norm;
         var to = event.x[i].add(event.gradx[i].scale(scale));
         var alpha = Math.min(10 * norm, 1).toFixed(2);

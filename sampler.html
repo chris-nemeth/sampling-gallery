@@ -708,7 +708,7 @@
       document.getElementById("savePNG").addEventListener("click", () => {
         if (mode === "3d") {
           const a = document.createElement("a");
-          a.download = "mcmc-" + sim.algorithm + "-" + sim.target + "-3d.png";
+          a.download = "sampling-gallery-" + sim.algorithm + "-" + sim.target + "-3d.png";
           a.href = plot3d.toDataURL("image/png");
           a.click();
         } else viz.savePNG();

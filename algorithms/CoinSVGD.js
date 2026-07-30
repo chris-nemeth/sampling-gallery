@@ -138,10 +138,18 @@ MCMC.registerAlgorithm("CoinSVGD", {
       }
     }
 
+    // snapshot for the event: the queue is consumed asynchronously and the
+    // particles are mutated in place below
+    var xSnap = new Array(n),
+      gSnap = new Array(n);
+    for (var i = 0; i < n; i++) {
+      xSnap[i] = self.chain[i].copy();
+      gSnap[i] = self.gradx[i].copy();
+    }
     visualizer.queue.push({
       type: "svgd-step",
-      x: self.chain,
-      gradx: self.gradx,
+      x: xSnap,
+      gradx: gSnap,
       h: self.h,
     });
 
