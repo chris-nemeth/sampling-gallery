@@ -164,6 +164,7 @@
   <script src="algorithms/RandomWalkMH.js"></script>
   <script src="algorithms/RejectionSampling.js"></script>
   <script src="algorithms/ImportanceSampling.js"></script>
+  <script src="algorithms/QuasiMonteCarlo.js"></script>
   <script src="algorithms/SliceSampling.js"></script>
   <script src="algorithms/ParallelTempering.js"></script>
   <script src="algorithms/TemperedSMC.js"></script>
@@ -176,7 +177,7 @@
   <script src="algorithms/FUSE-ULA.js"></script>
   <script src="algorithms/H2MC.js"></script>
   <script src="algorithms/GibbsSampling.js"></script>
-  <script src="algorithms/DE-MCMC-Z.js"></script>
+  <script src="algorithms/EnsembleMCMC.js"></script>
   <script src="algorithms/ZigZag.js"></script>
   <script src="algorithms/BouncyParticle.js"></script>
   <script src="algorithms/SVGD.js"></script>
@@ -188,8 +189,9 @@
     // Every algorithm registered with the engine. `label` is the short name
     // shown on the rail tile; `name` is the full title in the header panel.
     const SAMPLERS = [
-      { group: "Direct & accept–reject", id: "RejectionSampling", label: "Rejection", name: "Rejection Sampling", desc: "Proposes from a simple density and keeps each draw with probability p/(Mq) — exact independent samples, and a lesson in why MCMC is needed." },
-      { group: "Weighted Monte Carlo", id: "ImportanceSampling", label: "Importance", name: "Importance Sampling", desc: "Keeps every proposal draw but weights it by p/q; watch the Kish effective sample size collapse when the proposal is misplaced. Toggle SIR to resample to an unweighted cloud." },
+      { group: "Independent Monte Carlo", id: "RejectionSampling", label: "Rejection", name: "Rejection Sampling", desc: "Proposes from a simple density and keeps each draw with probability p/(Mq) — exact independent samples, and a lesson in why MCMC is needed." },
+      { group: "Independent Monte Carlo", id: "ImportanceSampling", label: "Importance", name: "Importance Sampling", desc: "Keeps every proposal draw but weights it by p/q; watch the weighted effective sample size collapse when the proposal is misplaced. SIR resampling and Pareto-smoothed weights (PSIS, with the k\u0302 diagnostic) as toggles." },
+      { group: "Independent Monte Carlo", id: "QuasiMonteCarlo", label: "QMC", name: "Quasi-Monte Carlo", desc: "Replaces pseudorandom proposal draws with a low-discrepancy Halton point set mapped through the proposal — evenly stratified samples and lower-variance weighted estimates. Flip back to pseudorandom to compare." },
       { group: "MCMC", id: "RandomWalkMH", label: "RWMH", name: "Random Walk Metropolis–Hastings", desc: "Proposes a blind Gaussian hop and accepts it with a probability set by the density ratio." },
       { group: "MCMC", id: "AdaptiveMH", label: "Adaptive MH", name: "Adaptive Metropolis", desc: "Random-walk Metropolis that learns its proposal covariance on the fly from the chain's own history." },
       { group: "MCMC", id: "HamiltonianMC", label: "HMC", name: "Hamiltonian Monte Carlo", desc: "Simulates a frictionless particle rolling across the negative log-density, using gradients for long, informed leaps. Optionally tunes its own step size by dual averaging." },
@@ -200,11 +202,11 @@
       { group: "MCMC", id: "H2MC", label: "H2MC", name: "Hessian–Hamiltonian Monte Carlo", desc: "Uses local curvature to shape long anisotropic Gaussian proposals, following approximate Hamiltonian flow." },
       { group: "MCMC", id: "ULA", label: "ULA", name: "Unadjusted Langevin Algorithm", desc: "Follows the gradient with injected noise and never rejects — fast, but slightly biased near the target." },
       { group: "MCMC", id: "SGLD", label: "SGLD", name: "Stochastic Gradient Langevin Dynamics", desc: "Langevin dynamics driven by noisy (mini-batch-style) gradients — the workhorse for large-scale Bayesian learning. Toggle control variates to anchor the gradient at the mode so the noise vanishes there." },
-      { group: "MCMC", id: "FUSE-ULA", label: "FUSE-ULA", name: "Tuning-free ULA (FUSE)", desc: "Unadjusted Langevin whose step size adapts itself with a distance-over-gradients schedule — nothing to tune." },
-      { group: "Ensemble & multimodal", id: "DE-MCMC-Z", label: "DE-MCMC-Z", name: "Differential Evolution Metropolis (Z)", desc: "Builds proposals from scaled differences of past states in an archive — self-tuning across scales." },
+      { group: "MCMC", id: "FUSE-ULA", label: "FUSE-ULA", name: "Tuning-free ULA (FUSE)", desc: "Unadjusted Langevin whose step size adapts itself with a distance-over-gradients schedule — no manual step size tuning required." },
+      { group: "Ensemble & multimodal", id: "EnsembleMCMC", label: "Ensemble", name: "Ensemble MCMC", desc: "An interacting ensemble of walkers proposing from each other's positions — affine-invariant stretch moves (emcee) or differential-evolution moves, so correlated targets come for free." },
       { group: "Ensemble & multimodal", id: "ParallelTempering", label: "PT", name: "Parallel Tempering", desc: "Runs replicas at rising temperatures and swaps them — hot chains cross between modes and hand the discovery down to the cold chain." },
-      { group: "Sequential & annealed", id: "TemperedSMC", label: "SMC", name: "Tempered Sequential Monte Carlo", desc: "A weighted particle cloud anneals from an easy reference to the target through reweighting, resampling and MCMC rejuvenation." },
-      { group: "Sequential & annealed", id: "RadFriends-NS", label: "RadFriends-NS", name: "Nested Sampling (RadFriends)", desc: "A population of live points climbs likelihood shells; RadFriends builds a safe region to draw replacements from." },
+      { group: "Sequential & annealed", id: "TemperedSMC", label: "SMC / AIS", name: "Tempered Sequential Monte Carlo", desc: "A weighted particle cloud anneals from an easy reference to the target through reweighting, resampling and MCMC rejuvenation. Switch to Annealed IS to run the same ladder without resampling — and watch the ESS decay." },
+      { group: "Sequential & annealed", id: "NestedSampling", label: "Nested", name: "Nested Sampling", desc: "A population of live points climbs likelihood shells, replacing the worst point with a draw from the constrained region (built here with RadFriends bubbles)." },
       { group: "Non-reversible", id: "ZigZag", label: "Zig-Zag", name: "Zig-Zag Sampler", desc: "A non-reversible continuous-time sampler: straight lines with ±1 velocities, switching direction at gradient-driven random events." },
       { group: "Non-reversible", id: "BouncyParticle", label: "BPS", name: "Bouncy Particle Sampler", desc: "A non-reversible particle that travels in straight lines and reflects off the gradient at random bounce times, with velocity refreshment." },
       { group: "Particle methods", id: "SVGD", label: "SVGD", name: "Stein Variational Gradient Descent", desc: "A cloud of particles moves together, pushed toward the density and apart from one another." },
@@ -217,6 +219,8 @@
       DualAveragingHMC: "HamiltonianMC",
       "SGLD-CV": "SGLD",
       MicrocanonicalHamiltonianMC: "HamiltonianMC",
+      "DE-MCMC-Z": "EnsembleMCMC",
+      "RadFriends-NS": "NestedSampling",
     };
     const TARGETS = [
       { id: "banana", label: "Banana" },

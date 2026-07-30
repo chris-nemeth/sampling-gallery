@@ -500,9 +500,9 @@ function transform(cube) {
    return params
 }
 
-MCMC.registerAlgorithm('RadFriends-NS', {
+MCMC.registerAlgorithm('NestedSampling', {
 
-  description: 'Nested Sampling with RadFriends',
+  description: 'Nested Sampling',
 
   about: function() {
     window.open('https://arxiv.org/abs/1407.5459');

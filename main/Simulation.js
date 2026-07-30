@@ -249,10 +249,12 @@ class Simulation {
     }
     el.textContent = lines.join("\n");
   }
-  // integrated autocorrelation time over a recent window, summing lags until
-  // the autocorrelation drops below 0.05 (initial-positive-sequence truncation)
+  // integrated autocorrelation time over a recent window, with Sokal's
+  // adaptive truncation: sum lags while k < c * tau(k) (c = 5). This avoids
+  // the tail-chopping bias of a hard threshold — a fixed cutoff at rho = 0.05
+  // underestimates tau by ~10-15% on strongly correlated chains.
   integratedAutocorrTime(chain) {
-    const W = Math.min(chain.length, 1000);
+    const W = Math.min(chain.length, 2000);
     const start = chain.length - W;
     let m0 = 0,
       m1 = 0;
@@ -268,15 +270,16 @@ class Simulation {
     c0 /= W;
     if (c0 <= 0) return 1;
     let tau = 1;
-    const maxLag = Math.min(100, W - 2);
+    const maxLag = Math.min(500, W - 2);
     for (let k = 1; k <= maxLag; k++) {
       let ck = 0;
       for (let i = start + k; i < chain.length; i++)
         ck += (chain[i][0] - m0) * (chain[i - k][0] - m0) + (chain[i][1] - m1) * (chain[i - k][1] - m1);
       ck /= W - k;
       const rho = ck / c0;
-      if (rho < 0.05) break;
+      if (rho <= 0) break; // noise floor
       tau += 2 * rho;
+      if (k >= 5 * tau) break; // Sokal window
     }
     return tau;
   }

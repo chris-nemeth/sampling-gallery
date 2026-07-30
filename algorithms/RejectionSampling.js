@@ -14,6 +14,9 @@ MCMC.registerAlgorithm("RejectionSampling", {
 
   reset: (self) => {
     self.chain = [];
+    // accepted draws are i.i.d., so every sample carries equal weight; setting
+    // chain_weights makes the stats panel report the correct ESS (= n)
+    self.chain_weights = [];
     self.nProposed = 0;
     self.nAccepted = 0;
 
@@ -59,6 +62,7 @@ MCMC.registerAlgorithm("RejectionSampling", {
 
   step: (self, visualizer) => {
     const points = [];
+    const accepted = [];
     for (let b = 0; b < self.batchSize; b++) {
       const proposal = self.proposalDist.getSample();
       self.nProposed++;
@@ -67,7 +71,12 @@ MCMC.registerAlgorithm("RejectionSampling", {
       if (isFinite(logRatio) && Math.log(Math.random()) < logRatio) {
         self.nAccepted++;
         self.chain.push(proposal.copy());
-        if (self.chain.length > 5000) self.chain.shift();
+        self.chain_weights.push(1);
+        if (self.chain.length > 5000) {
+          self.chain.shift();
+          self.chain_weights.shift();
+        }
+        accepted.push([proposal[0], proposal[1]]);
         points.push({ center: [proposal[0], proposal[1]], radius: 0.06, fill: "#0072b2" });
       } else {
         points.push({ center: [proposal[0], proposal[1]], radius: 0.045, fill: "#d55e00", alpha: 0.85 });
@@ -82,7 +91,16 @@ MCMC.registerAlgorithm("RejectionSampling", {
       clear: true,
       ellipses: [{ center: [0, 0], cov: self.proposalDist.cov }],
       points: points,
-      labels: ["acceptance " + acceptance.toFixed(1) + "% (M = " + Mstr + ")"],
+      samples: accepted,
+      labels:
+        self.nProposed > 200 && acceptance < 0.2
+          ? [
+              "acceptance " + acceptance.toFixed(2) + "% (M = " + Mstr + ")",
+              "proposal is narrower than the target:",
+              "the envelope M must be enormous, so",
+              "almost every draw is rejected",
+            ]
+          : ["acceptance " + acceptance.toFixed(1) + "% (M = " + Mstr + ")"],
       histograms: true,
     });
   },

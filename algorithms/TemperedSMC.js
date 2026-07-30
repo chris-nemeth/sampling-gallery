@@ -18,11 +18,17 @@ MCMC.registerAlgorithm("TemperedSMC", {
   },
 
   init: function (self) {
+    // "Annealed IS" mode (Neal 2001) runs the SAME anneal without any
+    // resampling or interaction: each particle carries its weight through a
+    // FIXED temperature ladder. The contrast with SMC is the point — watch
+    // the ESS decay monotonically where SMC's resampling would rescue it.
+    self.method = "Tempered SMC";
     self.nParticles = 200;
-    self.mcmcSteps = 3; // rejuvenation moves per tempering step
-    self.sigma = 0.5; // rejuvenation random-walk proposal sd
-    self.essTarget = 0.8; // adaptive tempering aims for ESS ~ essTarget * N
-    self.essThreshold = 0.5; // resample when ESS < essThreshold * N
+    self.mcmcSteps = 3; // rejuvenation / transition moves per tempering step
+    self.sigma = 0.5; // random-walk proposal sd
+    self.essTarget = 0.8; // SMC: adaptive tempering aims for ESS ~ essTarget * N
+    self.essThreshold = 0.5; // SMC: resample when ESS < essThreshold * N
+    self.nLevels = 30; // AIS: number of fixed ladder levels
   },
 
   reset: function (self) {
@@ -36,10 +42,22 @@ MCMC.registerAlgorithm("TemperedSMC", {
     }
     self.beta = 0;
     self.lastResampled = false;
+    // AIS ladder: quadratic spacing (denser near beta = 0, where the
+    // incremental weights vary most)
+    self.levels = [];
+    var T = Math.max(2, Math.round(self.nLevels));
+    for (var t = 1; t <= T; t++) self.levels.push(Math.pow(t / T, 2));
+    self.level = 0;
     MCMC.algorithms["TemperedSMC"].publish(self);
   },
 
   attachUI: function (self, folder) {
+    folder
+      .add(self, "method", ["Tempered SMC", "Annealed IS"])
+      .name("Method")
+      .onChange(function () {
+        sim.reset();
+      });
     folder
       .add(self, "nParticles", 50, 500)
       .step(10)
@@ -49,6 +67,13 @@ MCMC.registerAlgorithm("TemperedSMC", {
       });
     folder.add(self, "mcmcSteps", 1, 10).step(1).name("Rejuvenation moves");
     folder.add(self, "sigma", 0.1, 2).step(0.05).name("Rejuvenation σ");
+    folder
+      .add(self, "nLevels", 10, 100)
+      .step(5)
+      .name("AIS levels")
+      .onChange(function () {
+        sim.reset();
+      });
     folder.open();
   },
 
@@ -122,39 +147,53 @@ MCMC.registerAlgorithm("TemperedSMC", {
     };
     self.lastResampled = false;
 
-    // 1. adaptive temperature increment: bisect delta so the ESS of the
-    // INCREMENTAL weights u_i = exp(delta * d_i) is ~ essTarget * N (or take
-    // the full remaining step). Adapting on the increments alone — not the
-    // updated cumulative weights — matters: between resamples the cumulative
-    // ESS can already sit below the target, in which case no delta could
-    // reach it and the bisection would collapse to delta -> 0, stalling beta.
+    var isAIS = self.method === "Annealed IS";
+
+    // 1. temperature increment and reweighting.
+    //  - SMC: adaptive delta by bisection so the ESS of the INCREMENTAL
+    //    weights u_i = exp(delta * d_i) is ~ essTarget * N (or take the full
+    //    remaining step). Adapting on the increments alone — not the updated
+    //    cumulative weights — matters: between resamples the cumulative ESS
+    //    can already sit below the target, in which case no delta could reach
+    //    it and the bisection would collapse to delta -> 0, stalling beta.
+    //  - AIS: the next level of the FIXED ladder; the weight increment is
+    //    evaluated at the current positions BEFORE the transition moves
+    //    (Neal 2001's ordering).
     if (self.beta < 1) {
       var d = new Array(N); // incremental log-weight per unit delta
       for (var i = 0; i < N; i++) d[i] = safeLogP(self.xs[i]) - self.mu0.logDensity(self.xs[i]);
-      var essAt = function (delta) {
-        var lw = new Array(N);
-        for (var i = 0; i < N; i++) lw[i] = delta * d[i];
-        return alg.ess(lw);
-      };
-      var target = self.essTarget * N;
-      var delta = 1 - self.beta;
-      if (essAt(delta) < target) {
-        var lo = 0,
-          hi = delta;
-        for (var it = 0; it < 30; it++) {
-          var mid = (lo + hi) / 2;
-          if (essAt(mid) < target) hi = mid;
-          else lo = mid;
+      var delta;
+      if (isAIS) {
+        var next = self.levels[Math.min(self.level, self.levels.length - 1)];
+        self.level++;
+        delta = next - self.beta;
+      } else {
+        var essAt = function (dlt) {
+          var lw = new Array(N);
+          for (var i = 0; i < N; i++) lw[i] = dlt * d[i];
+          return alg.ess(lw);
+        };
+        var target = self.essTarget * N;
+        delta = 1 - self.beta;
+        if (essAt(delta) < target) {
+          var lo = 0,
+            hi = delta;
+          for (var it = 0; it < 30; it++) {
+            var mid = (lo + hi) / 2;
+            if (essAt(mid) < target) hi = mid;
+            else lo = mid;
+          }
+          delta = (lo + hi) / 2;
         }
-        delta = (lo + hi) / 2;
       }
       for (var i = 0; i < N; i++) self.logW[i] += delta * d[i];
       self.beta = Math.min(1, self.beta + delta);
     }
 
-    // 2. resample when the weights have degenerated (or on reaching the target)
+    // 2. SMC resamples when the weights degenerate; AIS never does — its
+    // weights (and their decaying ESS) are the output
     var kish = alg.ess(self.logW);
-    if (kish < self.essThreshold * N || (self.beta >= 1 && kish < 0.999 * N)) {
+    if (!isAIS && (kish < self.essThreshold * N || (self.beta >= 1 && kish < 0.999 * N))) {
       alg.systematicResample(self, alg.normWeights(self.logW));
       self.lastResampled = true;
       kish = N;
@@ -180,9 +219,9 @@ MCMC.registerAlgorithm("TemperedSMC", {
     for (var i = 0; i < N; i++) {
       points.push({
         center: [self.xs[i][0], self.xs[i][1]],
-        radius: 0.03 + 0.12 * (ws[i] / wmax),
+        radius: 0.018 + 0.05 * (ws[i] / wmax),
         fill: "#0088b0",
-        alpha: 0.75,
+        alpha: 0.7,
       });
     }
     visualizer.queue.push({
@@ -190,8 +229,10 @@ MCMC.registerAlgorithm("TemperedSMC", {
       clear: true,
       points: points,
       labels: [
-        self.beta >= 1 ? "β = 1.00 — sampling the target" : "β = " + self.beta.toFixed(2),
-        "ESS " + kish.toFixed(0) + " / " + N + (self.lastResampled ? " (resampled)" : ""),
+        (isAIS ? "AIS " : "SMC ") +
+          (self.beta >= 1 ? "β = 1.00 — sampling the target" : "β = " + self.beta.toFixed(2)) +
+          (isAIS && self.beta < 1 ? "  (level " + self.level + "/" + self.levels.length + ")" : ""),
+        "ESS " + kish.toFixed(0) + " / " + N + (self.lastResampled ? " (resampled)" : isAIS ? " (no resampling)" : ""),
       ],
       histograms: true,
     });

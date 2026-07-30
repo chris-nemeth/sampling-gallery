@@ -248,8 +248,11 @@ class Visualizer {
     // this.histBins = Math.min(125, Math.floor(chain.length / 50) + 10);
     this.xbins = linspace(this.xmin, this.xmax, this.histBins);
     this.ybins = linspace(this.ymin, this.ymax, this.histBins);
-    this.xhist = new Uint16Array(this.histBins);
-    this.yhist = new Uint16Array(this.histBins);
+    // Float64: weighted chains (importance sampling, SMC) accumulate
+    // fractional weights, and Uint16 bins both truncate them and overflow
+    // (wrapping at 65535), corrupting the histograms
+    this.xhist = new Float64Array(this.histBins);
+    this.yhist = new Float64Array(this.histBins);
     for (var i = 0; i < chain.length; ++i) {
       var x, y;
       var weight = 1;
@@ -756,6 +759,11 @@ class Visualizer {
             alpha: pt.alpha,
           });
         }
+      if (event.samples) {
+        // persistent sample dots on the accumulating samples canvas — for
+        // algorithms that never emit accept events (rejection sampling etc.)
+        for (var i = 0; i < event.samples.length; ++i) this.drawSample(this.samplesCanvas, event.samples[i]);
+      }
       if (event.labels) {
         // start a dozen lines down so the readout clears the header overlay
         // that sampler.html places over the canvas's top-left corner
@@ -837,8 +845,8 @@ class Visualizer {
       context.clearRect(0, 0, this.canvas.width, this.canvas.height);
       for (var i = 0; i < event.x.length; i++) {
         this.drawCircle(this.overlayCanvas, {
-          fill: "#cfc",
-          color: "#afa",
+          fill: "rgba(0,136,176,0.05)",
+          color: "rgba(0,136,176,0.25)",
           center: event.x[i],
           radius: event.r,
           lw: 1,

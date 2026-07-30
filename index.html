@@ -33,22 +33,22 @@
     <figure style="border-radius:3px;overflow:hidden;box-shadow:var(--shadow-md);margin:0"><img src="docs/hmc.gif" alt="Hamiltonian Monte Carlo animation" style="width:100%;display:block;background:#fff"></figure>
   </section>
   <section style="padding-top:52px">
-    <div style="border-top:2px solid var(--color-text);padding-top:10px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px"><h3 style="font-size:26px;margin:0">Direct and accept–reject methods</h3><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600)">Independent draws, exact by construction</span></div>
+    <div style="border-top:2px solid var(--color-text);padding-top:10px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px"><h3 style="font-size:26px;margin:0">Independent Monte Carlo</h3><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600)">Independent draws — exact, weighted or low-discrepancy</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 32px">
       <a class="entry" href="sampler.html?algorithm=RejectionSampling">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">REJ</span></div>
         <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Rejection Sampling</span><sup style="font-size:11px;color:var(--color-accent-2)">[14]</sup></div>
         <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Draws from a simple proposal under an envelope and keeps the lucky ones — exact samples, and a lesson in why MCMC is needed.</p>
       </a>
-    </div>
-  </section>
-  <section style="padding-top:52px">
-    <div style="border-top:2px solid var(--color-text);padding-top:10px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px"><h3 style="font-size:26px;margin:0">Weighted Monte Carlo</h3><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600)">Every sample carries a weight</span></div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 32px">
       <a class="entry" href="sampler.html?algorithm=ImportanceSampling">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">IS</span></div>
-        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Importance Sampling</span><sup style="font-size:11px;color:var(--color-accent-2)">[15]</sup></div>
-        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Keeps every draw, weighted by p/q; weight degeneracy and the Kish ESS are the whole story. SIR resampling as a toggle.</p>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Importance Sampling</span><sup style="font-size:11px;color:var(--color-accent-2)">[15][21]</sup></div>
+        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Keeps every draw, weighted by p/q; weight degeneracy and the effective sample size are the whole story. SIR resampling and Pareto smoothing (PSIS) as toggles.</p>
+      </a>
+      <a class="entry" href="sampler.html?algorithm=QuasiMonteCarlo">
+        <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">QMC</span></div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Quasi-Monte Carlo</span><sup style="font-size:11px;color:var(--color-accent-2)">[20]</sup></div>
+        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Low-discrepancy point sets instead of random draws — evenly stratified space-filling, side by side with plain Monte Carlo.</p>
       </a>
     </div>
   </section>
@@ -115,10 +115,10 @@
   <section style="padding-top:52px">
     <div style="border-top:2px solid var(--color-text);padding-top:10px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px"><h3 style="font-size:26px;margin:0">Ensemble and multimodal methods</h3><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600)">Populations of interacting chains</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 32px">
-      <a class="entry" href="sampler.html?algorithm=DE-MCMC-Z">
-        <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">DE-Z</span></div>
-        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Differential Evolution (Z)</span><sup style="font-size:11px;color:var(--color-accent-2)">[7]</sup></div>
-        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">A population of chains proposes moves from each other’s differences.</p>
+      <a class="entry" href="sampler.html?algorithm=EnsembleMCMC">
+        <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">ENS</span></div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Ensemble MCMC</span><sup style="font-size:11px;color:var(--color-accent-2)">[7][18]</sup></div>
+        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Walkers propose from each other’s positions — stretch moves are affine-invariant, so correlated ridges come for free. Differential evolution as a second mode.</p>
       </a>
       <a class="entry" href="sampler.html?algorithm=ParallelTempering">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">PT</span></div>
@@ -132,13 +132,13 @@
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:34px 32px">
       <a class="entry" href="sampler.html?algorithm=TemperedSMC">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">SMC</span></div>
-        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Tempered SMC</span><sup style="font-size:11px;color:var(--color-accent-2)">[17]</sup></div>
-        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">A weighted particle cloud anneals from an easy reference to the target: reweight, resample, rejuvenate.</p>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Tempered SMC / AIS</span><sup style="font-size:11px;color:var(--color-accent-2)">[17][19]</sup></div>
+        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">A weighted particle cloud anneals from an easy reference to the target: reweight, resample, rejuvenate. Annealed importance sampling as a no-resampling mode.</p>
       </a>
-      <a class="entry" href="sampler.html?algorithm=RadFriends-NS">
+      <a class="entry" href="sampler.html?algorithm=NestedSampling">
         <div class="en-thumb" style="height:120px;background:#fff;border:1px solid var(--color-divider);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center"><span style="font-family:var(--font-heading);font-weight:600;font-size:26px;letter-spacing:.02em;color:var(--color-accent-600);background:radial-gradient(circle at 50% 58%,var(--color-accent-100),transparent 72%);padding:16px 22px;border-radius:40px">NS</span></div>
-        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Nested Sampling (RadFriends)</span><sup style="font-size:11px;color:var(--color-accent-2)">[6]</sup></div>
-        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Peels the distribution in shells of increasing likelihood.</p>
+        <div style="display:flex;align-items:baseline;gap:7px;margin-top:11px"><span class="en-title" style="font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.15">Nested Sampling</span><sup style="font-size:11px;color:var(--color-accent-2)">[6]</sup></div>
+        <p style="font-size:13px;color:var(--color-neutral-700);margin:5px 0 0;line-height:1.4">Peels the distribution in shells of increasing likelihood, drawing replacements from a constrained region.</p>
       </a>
     </div>
   </section>
@@ -187,6 +187,10 @@
       <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[15] Kahn &amp; Marshall. Methods of reducing sample size in Monte Carlo computations. (1953).</p>
       <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[16] Geyer. Markov chain Monte Carlo maximum likelihood. (1991).</p>
       <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[17] Del Moral, Doucet &amp; Jasra. Sequential Monte Carlo samplers. JRSS-B (2006).</p>
+      <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[18] Goodman &amp; Weare. Ensemble samplers with affine invariance. CAMCoS (2010).</p>
+      <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[19] Neal. Annealed importance sampling. Stat. &amp; Comput. (2001).</p>
+      <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[20] Niederreiter. Random Number Generation and Quasi-Monte Carlo Methods. SIAM (1992).</p>
+      <p style="padding-left:1.6em;text-indent:-1.6em;margin:0 0 9px;break-inside:avoid">[21] Vehtari, Simpson, Gelman, Yao &amp; Gabry. Pareto smoothed importance sampling. JMLR (2024).</p>
     </div>
   </section>
   <footer style="border-top:1px solid var(--color-divider);margin-top:56px;padding-top:16px;display:flex;justify-content:space-between;font-size:12px;color:var(--color-neutral-600)">

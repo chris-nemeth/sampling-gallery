@@ -23,13 +23,14 @@ buildless HTML: open it in a browser, or serve the folder.
 - `docs/*.gif` — animation thumbnails used by the landing page.
 
 ## Samplers
-Rejection sampling, importance sampling (with SIR), slice sampling,
+Rejection sampling, importance sampling (with SIR and PSIS), quasi-Monte Carlo, slice sampling,
 Random Walk MH, Adaptive MH, HMC (optional dual-averaging step-size
 adaptation), NUTS (efficient dual-averaged by default; naive tree and fixed
 step size as advanced options), MALA, ULA, SGLD (optional control variates),
-tuning-free ULA (FUSE), H2MC, Gibbs, DE-MCMC-Z, parallel tempering,
-tempered SMC, Zig-Zag, Bouncy Particle
-Sampler, SVGD, and Nested Sampling (RadFriends).
+tuning-free ULA (FUSE), H2MC, Gibbs, ensemble MCMC (stretch and differential-evolution
+moves), parallel tempering, tempered SMC (with an annealed importance
+sampling mode), Zig-Zag, Bouncy Particle
+Sampler, SVGD, and nested sampling.
 
 ## Run locally
 Open `index.html` in any modern browser, or from the folder root:
