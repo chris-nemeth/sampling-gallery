@@ -9,6 +9,10 @@ buildless HTML: open it in a browser, or serve the folder.
 ## Pages
 - `index.html` — landing atlas: all algorithms grouped by family, with
   animated thumbnails and plain-language descriptions. Links into the sampler.
+- `notes.html` — field notes: a companion note for every sampler (what it
+  does, what to watch while it runs, which knobs matter, references), written
+  as plain markdown in `notes/*.md` and also available in-app via the "Notes"
+  button in the sampler.
 - `sampler.html` — the interactive app, driven by the project's real MCMC
   engine (`lib/`, `main/`, `algorithms/`): every sampler in the
   rail runs its genuine algorithm. Nine target distributions (banana / donut /
