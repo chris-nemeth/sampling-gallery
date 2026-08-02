@@ -1,6 +1,13 @@
-# sampling-viz
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-wordmark-dark.svg">
+    <img alt="The Sampling Gallery — interactive Monte Carlo, MCMC, and related sampling algorithms" src="docs/logo-wordmark.svg" width="760">
+  </picture>
+</p>
 
 **Live demo: https://chris-nemeth.github.io/sampling-viz/**
+
+![Hamiltonian Monte Carlo exploring the banana target](docs/hero.png)
 
 An interactive gallery of Markov-chain Monte Carlo (and related) sampling
 algorithms — animated, tunable, and explained in plain language. Static,
@@ -24,7 +31,8 @@ buildless HTML: open it in a browser, or serve the folder.
 - `classic.html` — the original interface (`app.html`), kept for continuity:
   a full-window 2D visualizer with a lil-gui control panel.
 - `styles.css` — Broadsheet design tokens + component classes.
-- `docs/*.gif` — animation thumbnails used by the landing page.
+- `notes/*.md` — the field notes source; `docs/` — thumbnails and social
+  card, captured from the live engine.
 
 ## Samplers
 Rejection sampling, importance sampling (with SIR and PSIS), quasi-Monte Carlo, slice sampling,
@@ -56,3 +64,19 @@ then visit http://localhost:8000/
   there are no placeholder fall-backs.
 - Redesigned in the Broadsheet system; based on the original demo by Chi Feng:
   https://github.com/chi-feng/mcmc-demo
+
+## Using this in teaching
+Please do — that is what it is for. Link to the live site or to a specific
+sampler/target (e.g. `sampler.html?algorithm=RiemannianHMC&target=funnel`);
+the field notes at `notes.html` are written as companion reading. If you use
+the gallery in a course or talk, a link back here is appreciated.
+
+## Acknowledgements & licensing
+Built from Chi Feng's wonderful
+[mcmc-demo](https://github.com/chi-feng/mcmc-demo) (MIT). Nested sampling
+adapts Johannes Buchner's
+[ultranest-js](https://github.com/JohannesBuchner/ultranest-js)
+(`algorithms/NSRadFriends.js`, AGPL-3.0 — the one non-MIT file; see LICENSE).
+Markdown rendering by [marked](https://github.com/markedjs/marked) (MIT).
+Algorithm sources are cited in the gallery's reference list and in each
+field note.

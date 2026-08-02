@@ -131,7 +131,7 @@ function radfriends_drawer(ndim, transform, likelihood) {
 				return false
 		}
 		if (!(this.maxsqdistance > 0)) {
-			console.log("friends not used because maxsqdistance is " + this.maxsqdistance)
+			// console.log("friends not used because maxsqdistance is " + this.maxsqdistance)
 			return true;
 		}
 		for (var i = 0, n = members.length; i < n; i++) {
@@ -150,7 +150,7 @@ function radfriends_drawer(ndim, transform, likelihood) {
 				return 0
 		}*/
 		if (!(this.maxsqdistance > 0)) {
-			console.log("friends not used because maxsqdistance is " + this.maxsqdistance)
+			// console.log("friends not used because maxsqdistance is " + this.maxsqdistance)
 			return 1;
 		}
 		var nnearby = 0
@@ -174,7 +174,7 @@ function radfriends_drawer(ndim, transform, likelihood) {
 			}
 			ntotal += 1
 			if (n == 0) {
-				console.log("generate_direct(): No friends available for checking!")
+				// console.log("generate_direct(): No friends available for checking!")
 				return ntotal
 			}
 			if (this.is_inside(current, members))
@@ -436,7 +436,7 @@ function integrator(ndim, transform, likelihood, data_calc, nlive_points, frac_r
 	this.logZ = this.wi
 	this.H = this.current.L - this.logZ
 	this.logZerr = NaN
-	console.log("integrator[initial]: ln Z = " + this.logZ + " " + this.H + " " + this.wi + " " + this.current.L)
+	// console.log("integrator[initial]: ln Z = " + this.logZ + " " + this.H + " " + this.wi + " " + this.current.L)
 	
 	function _progress() {
 		this.logwidth = Math.log(1 - Math.exp(-1.0 / nlive_points)) + this.logVolremaining
@@ -452,11 +452,11 @@ function integrator(ndim, transform, likelihood, data_calc, nlive_points, frac_r
 		if (true) {
 			var total_error = this.logZerr + sampler.remainderZerr
 			if (Math.exp(sampler.remainderZ - this.logZ) < frac_remain) {
-				console.log("Nested sampling integrator has walked through the most of the posterior and reached convergence.")
+				// console.log("Nested sampling integrator has walked through the most of the posterior and reached convergence.")
 				return 0
 			}
 			if (maxiter > 0 && this.iter > maxiter) {
-				console.log("Nested sampling integrator has reached the number of iterations limit.")
+				// console.log("Nested sampling integrator has reached the number of iterations limit.")
 				return 0
 			}
 		}
@@ -466,7 +466,7 @@ function integrator(ndim, transform, likelihood, data_calc, nlive_points, frac_r
 		this.H = Math.exp(this.wi - logZnew) * this.current.L + Math.exp(this.logZ - logZnew) * (this.H + this.logZ) - logZnew
 		this.logZ = logZnew
 		if (this.iter % 50 == 0)
-			console.log("integrator[" + this.iter + "]: current ln Z = " + this.logZ + " +- " + this.logZerr + " +- " + sampler.remainderZerr)
+			// console.log("integrator[" + this.iter + "]: current ln Z = " + this.logZ + " +- " + this.logZerr + " +- " + sampler.remainderZerr)
 		return 1
 	}
 	this.progress = _progress
@@ -567,7 +567,7 @@ MCMC.registerAlgorithm('NestedSampling', {
        self.wait_iter++;
 	   return;
     }
-    console.log("rejected " + self.integrator.drawer.rejected.length + " points")
+    // console.log("rejected " + self.integrator.drawer.rejected.length + " points")
     
     visualizer.queue.push({type: 'ns-dead-point', proposal: self.integrator.sampler.latest_point.phys_coords, deadpoint: previous, rejected: self.integrator.drawer.rejected});
     self.integrator.drawer.rejected = []

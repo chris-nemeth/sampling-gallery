@@ -17,7 +17,6 @@ class Simulation {
     this.lastStatsUpdate = 0;
   }
   setAlgorithm(algorithmName) {
-    console.log("Setting algorithm to " + algorithmName);
     this.hasAlgorithm = true;
     this.algorithm = algorithmName;
     this.mcmc.initialized = false;
@@ -37,7 +36,6 @@ class Simulation {
     this.resetStats();
   }
   setTarget(targetName) {
-    console.log("Setting target to " + targetName, MCMC.targets[targetName]);
     this.hasTarget = true;
     this.target = targetName;
     this.mcmc.logDensity = MCMC.targets[targetName].logDensity;
@@ -345,7 +343,6 @@ window.onload = function () {
     if ("seed" in queryParams) {
       // reseed
       seed = Math.seedrandom(queryParams["seed"]);
-      console.log("Setting seed to " + seed);
     }
     let config = [
       ["delay", parseInt, sim, "sim"],
@@ -364,7 +361,6 @@ window.onload = function () {
         objName = config[i][3];
       if (param in queryParams) {
         let value = parse(queryParams[param]);
-        console.log("Setting " + objName + "." + param + " to " + value);
         obj[param] = value;
       }
     }
