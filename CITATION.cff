@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use The Sampling Gallery in teaching or research, please cite it as below."
+title: "The Sampling Gallery"
+type: software
+authors:
+  - family-names: Nemeth
+    given-names: Christopher
+    affiliation: "Lancaster University"
+    orcid: "https://orcid.org/0000-0002-9084-3866"
+version: 1.0.0
+date-released: 2026-08-02
+url: "https://chris-nemeth.github.io/sampling-gallery/"
+repository-code: "https://github.com/chris-nemeth/sampling-gallery"
+license: MIT
+abstract: >-
+  An interactive gallery of Monte Carlo, MCMC, and related sampling
+  algorithms — animated, tunable, and explained, with companion field
+  notes for every sampler. Built from Chi Feng's mcmc-demo.
+keywords:
+  - Markov chain Monte Carlo
+  - Monte Carlo methods
+  - Bayesian inference
+  - sampling algorithms
+  - visualization
