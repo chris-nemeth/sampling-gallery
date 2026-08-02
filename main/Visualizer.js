@@ -586,7 +586,8 @@ class Visualizer {
         drawProposalArrow = false;
       }
       // draw MALA gradient/proposal offset
-      if (event.hasOwnProperty("gradient")) {
+      if (event.hasOwnProperty("gradient") &&
+    event.proposalType != "barker") {
         this.drawArrow(this.overlayCanvas, {
           from: last,
           to: last.add(event.gradient),
@@ -604,6 +605,35 @@ class Visualizer {
           this.drawProposalContour(this.overlayCanvas, last.add(event.gradient), event.proposalCov);
         }
       }
+
+      // draw Barker proposal candidates
+      if (event.proposalType == "barker") {
+      
+          drawProposalArrow = false;
+          drawProposalCov = false;
+      
+          for (var i = 0; i < event.corners.length; i++) {
+      
+              var p = event.cornerProb[i];
+      
+              this.drawCircle(this.overlayCanvas,{
+                  center:event.corners[i],
+                  radius:0.015 + 0.035*Math.sqrt(p),
+                  fill:"#4a6cff",
+                  alpha:0.25 + 0.75*p,
+                  lw:0
+              });
+          }
+      
+          // sampled proposal
+          this.drawCircle(this.overlayCanvas,{
+              center:event.proposal,
+              radius:0.045,
+              fill:this.proposalColor,
+              lw:0
+          });
+      }
+      
       // draw proposal covariance
       if (event.hasOwnProperty("proposalCov") && drawProposalCov) {
         var center = event.hasOwnProperty("proposalMean") ? event.proposalMean : last;

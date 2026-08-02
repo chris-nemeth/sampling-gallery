@@ -41,7 +41,7 @@ Random Walk MH, Adaptive MH, HMC (optional dual-averaging step-size
 adaptation), NUTS (efficient dual-averaged by default; naive tree and fixed
 step size as advanced options), Riemannian-manifold HMC (SoftAbs metric),
 the apogee-to-apogee path sampler (AAPS),
-MALA, ULA, SGLD (optional control variates),
+MALA, ULA, SGLD (optional control variates), Barker Proposal,
 tuning-free ULA (FUSE), H2MC, Gibbs, ensemble MCMC (stretch and differential-evolution
 moves), parallel tempering, tempered SMC (with an annealed importance
 sampling mode), Zig-Zag, Bouncy Particle

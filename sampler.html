@@ -218,6 +218,7 @@
   <script src="algorithms/HamiltonianMC.js"></script>
     <script src="algorithms/NUTS.js"></script>
   <script src="algorithms/MALA.js"></script>
+  <script src="algorithms/Barker.js"></script>
   <script src="algorithms/ULA.js"></script>
   <script src="algorithms/SGLD.js"></script>
   <script src="algorithms/FUSE-ULA.js"></script>
@@ -245,6 +246,7 @@
       { group: "MCMC", id: "RiemannianHMC", label: "RMHMC", name: "Riemannian-Manifold HMC", desc: "HMC on a position-dependent metric (SoftAbs of the local Hessian): the ellipses show the sampler's notion of distance deforming with the target's curvature. Watch it traverse the funnel's neck where fixed-metric HMC stalls." },
       { group: "MCMC", id: "AAPS", label: "AAPS", name: "Apogee-to-Apogee Path Sampler", desc: "A simpler, tuning-robust alternative to NUTS: the leapfrog path is cut into segments at its apogees, the current point sits in a random window of K+1 segments, and a proposal is drawn from the whole path weighted by distance and density." },
       { group: "MCMC", id: "MALA", label: "MALA", name: "Metropolis-adjusted Langevin", desc: "Nudges each proposal uphill along the gradient, then applies a Metropolis correction to stay exact." },
+      { group: "MCMC", id: "Barker", label: "Barker", name: "Barker Proposal", desc: "A simple, robust alternative to Metropolis-Hastings with a different proposal distribution." },
       { group: "MCMC", id: "SliceSampling", label: "Slice", name: "Slice Sampling", desc: "Draws a height under the density curve, then samples uniformly from the horizontal slice at that height, adapting its step size automatically." },
       { group: "MCMC", id: "EllipticalSlice", label: "Ell. Slice", name: "Elliptical Slice Sampling", desc: "Slice-samples the angle around an ellipse through the current state and a Gaussian draw — rejection-free, with no step size to tune. The target is split as Gaussian prior × residual likelihood." },
       { group: "MCMC", id: "GibbsSampling", label: "Gibbs", name: "Gibbs Sampling", desc: "Updates one coordinate at a time from its full conditional, sweeping through the dimensions." },
