@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-**Live demo: https://chris-nemeth.github.io/sampling-viz/**
+**Live demo: https://chris-nemeth.github.io/sampling-gallery/**
 
 ![Hamiltonian Monte Carlo exploring the banana target](docs/hero.png)
 
