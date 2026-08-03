@@ -619,7 +619,7 @@ class Visualizer {
               this.drawCircle(this.overlayCanvas,{
                   center:event.corners[i],
                   radius:0.015 + 0.035*Math.sqrt(p),
-                  fill:"#4a6cff",
+                  fill:"#0088b0",
                   alpha:0.25 + 0.75*p,
                   lw:0
               });

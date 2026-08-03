@@ -80,3 +80,8 @@ adapts Johannes Buchner's
 Markdown rendering by [marked](https://github.com/markedjs/marked) (MIT).
 Algorithm sources are cited in the gallery's reference list and in each
 field note.
+
+Community contributions: the Barker proposal sampler — implementation,
+visualization and field note — was contributed by
+[Rui-Yang Zhang](https://github.com/ShuSheng3927). Further contributions
+are very welcome; see the field notes for the house conventions.

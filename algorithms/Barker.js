@@ -118,7 +118,7 @@ MCMC.registerAlgorithm("Barker", {
 
     } else {
 
-      self.chain.push(x);
+      self.chain.push(x.copy());
 
       visualizer.queue.push({
         type: "reject",
